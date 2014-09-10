@@ -4,4 +4,4 @@
 
 FROM scratch
 MAINTAINER "Juan Luis Baptiste" <juancho@mageia.org>
-ADD ../rootfs-4.tar.xz /
+ADD rootfs-4.tar.xz /
