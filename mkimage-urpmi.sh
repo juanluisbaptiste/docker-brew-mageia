@@ -77,7 +77,7 @@ fi
         urpmi.addmedia --distrib \
                 $mirror \
                 --urpmi-root "$rootfsDir"
-        urpmi basesystem-minimal urpmi $systemd \
+        urpmi basesystem-minimal urpmi locales locales-en $systemd \
                 --auto \
                 --no-suggests \
                 --urpmi-root "$rootfsDir" \
