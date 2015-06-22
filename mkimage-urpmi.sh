@@ -73,7 +73,6 @@ if [ ! -z $systemd ]; then
 fi
 
 (
-        set -x
         urpmi.addmedia --distrib \
                 $mirror \
                 --urpmi-root "$rootfsDir"
