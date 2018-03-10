@@ -1,4 +1,4 @@
-# Dockerfile to create Mageia linux 5 base images
+# Dockerfile to create Mageia linux 6 base images
 # Create base image with mkimage-urpmi.sh script
 #
 
