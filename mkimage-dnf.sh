@@ -101,6 +101,14 @@ fi
             install basesystem-minimal $pkgmgr locales locales-en $systemd
 )
 
+# Configure urpmi mirrorlist if urpmi is included on the system
+if [[ $pkgmgr == *"urpmi"* ]]; then
+        if [ -x /usr/sbin/urpmi.addmedia ]; then
+                urpmi.addmedia --distrib --mirrorlist "https://mirrors.mageia.org/api/mageia.$installversion.x86_64.list" \
+                               --urpmi-root "$rootfsDir"
+        fi
+fi
+
 "$(dirname "$BASH_SOURCE")/.febootstrap-minimize" "$rootfsDir"
 
 if [ -d "$rootfsDir/etc/sysconfig" ]; then
