@@ -132,18 +132,12 @@ nameserver 8.8.8.8
 nameserver 8.8.4.4
 EOF
 
-rootfsSuffix=
-
-if [ ! -z $pkgmgr ]; then
-    rootfsSuffix="-$pkgmgr"
-fi
-
 if [ ! -z $systemd ]; then
-    rootfsSuffix="$rootfsSuffix-systemd"
+    tarFile="$dir/rootfs-systemd.tar.xz"
+else
+    tarFile="$dir/rootfs.tar.xz"
 fi
 
-tarFile="$dir/rootfs$rootfsSuffix.tar.xz"
-    
 touch "$tarFile"
 
 (
