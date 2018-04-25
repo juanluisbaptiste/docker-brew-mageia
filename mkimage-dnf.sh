@@ -93,6 +93,7 @@ fi
 
 (
         dnf \
+				    --quiet \
             $reposetup \
             --installroot="$rootfsDir" \
             --releasever="$installversion" \
