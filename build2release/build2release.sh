@@ -15,7 +15,7 @@
 # to make a brand new one that doesn't contain that older tarball commit
 
 # This script version
-VERSION=0.1
+VERSION=0.2
 # Set default version
 MGA_LATEST_VERSION="6"
 MGA_VERSION=${MGA_LATEST_VERSION}
@@ -63,7 +63,7 @@ function prepare() {
   # the wrong branch
   dist_branch_exists="$(git branch|grep dist)"
   if [ "${dist_branch_exists}" == "* dist" ]; then
-    #Check if the previous version is deprecated and not back it up
+    #Check if the previous version is deprecated and if not back it up
     if [[ ${MGA_PREV_VERSION} != *"${MGA_DEPRECATED_VERSIONS}"* ]]; then
       backup_previous_version
     fi
@@ -302,8 +302,7 @@ if [ ${UPDATE_OFFICIAL} -eq 1 ]; then
   update_library
 fi
 
+# Cleanup
 rm -fr ${TMP_DIR}
 
 echo "* Done."
-
-# Now clone docker official-images repo and update the library build image
