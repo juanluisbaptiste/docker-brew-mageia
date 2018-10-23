@@ -76,6 +76,7 @@ fi
 
 NEW_ROOTFS_DIR="$(pwd)/${MGA_VERSION}/"
 PREV_ROOTFS_DIR="$(pwd)/${MGA_PREV_VERSION}/"
+mkdir ${TMP_DIR}
 
 # Checkout dist branch to get the rootfs file from older releases
 echo "* Checking out dist branch:"

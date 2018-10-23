@@ -101,7 +101,7 @@ function backup_rootfs () {
 
   if [ $? -eq 0 ]; then
     echo "* Moving rootfs file ${rootfs_file} release away:"
-    mkdir ${TMP_DIR}
+    mkdir -p ${TMP_DIR}
     sudo cp ${rootfs_file_path} ${TMP_DIR}/${rootfs_file}-${version}
     [ $? -gt 0 ] && echo "ERROR: Cannot copy rootfs file: ${rootfs_file}" && exit 1
   fi
