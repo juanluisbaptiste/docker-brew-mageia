@@ -253,7 +253,7 @@ do
        ;;
     P) PUSH=1
        ;;
-    u) UPDATE_OFFICIAL=1
+    U) UPDATE_OFFICIAL=1
        ;;
     h) usage
        exit
