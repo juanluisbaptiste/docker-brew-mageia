@@ -21,12 +21,15 @@ MGA_LATEST_VERSION="6"
 MGA_VERSION=${MGA_LATEST_VERSION}
 MGA_PREV_VERSION=$((MGA_VERSION-1))
 MGA_DEPRECATED_VERSIONS="3 4"
+OFFICIAL_IMAGES_REPO="juanluisbaptiste/official-images"
+OFFICIAL_IMAGES_REPO_URL="git@github.com:${OFFICIAL_IMAGES_REPO}"
 TMP_DIR="/tmp/mga-tmp"
 # COPY_BACK=0
 ROOTFS_FILE_NAME="rootfs.tar.xz"
 BUILD=0
 PREPARE=0
 PUSH=0
+UPDATE_OFFICIAL=0
 
 usage()
 {
@@ -45,6 +48,7 @@ OPTIONS:
 -p    Only prepare the dist branch for commit & push (backup rootfs files and
       recreate a clean dist branch).
 -P    Commit and push new rootfs file (will call -p).
+-U    Update mageia docker library file on own fork.
 -v    Print version.
 -h    Print help.
 EOF
@@ -194,6 +198,39 @@ echo "* Done building image."
   fi
 }
 
+function update_library() {
+  # Now clone docker official-images repo and update the library build image
+  cd ${TMP_DIR}
+  git clone ${OFFICIAL_IMAGES_REPO_URL}
+  repo_dir=$(echo ${OFFICIAL_IMAGES_REPO}|cut -d'\' -f)
+  cd ${repo_dir}
+
+  # Get the last commit hash of dist branch
+  git_commit=$(git ls-remote ${OFFICIAL_IMAGES_REPO_URL} refs/heads/dist | cut -f 1)
+  [ $? -gt 0 ] && echo "ERROR: Cannot get last commit from dist branch." && exit 1
+
+  # Update library file with new hash
+  if [ ${git_commit} != "" ]; then
+    sed -i -r "s/(GitCommit: *).*/\1${git_commit}/" library/mageia
+    [ $? -gt 0 ] && echo "ERROR: Cannot update commit hash on library file." && exit 1
+  else
+    echo "ERROR: Git commit is empty !!" && exit 1
+  fi
+
+  # Add and commit change
+  git add library/mageia
+  [ $? -gt 0 ] && echo "ERROR: Cannot git add modified library file." && exit 1
+  git commit -m "${commit_msg}"
+  [ $? -gt 0 ] && echo "ERROR: Cannot commit on library file." && exit 1
+  git push
+  [ $? -gt 0 ] && echo "ERROR: Cannot push on library file." && exit 1
+}
+
+create_pr() {
+  git push -u origin "$1"
+  hub pull-request -h "$1" -F -
+}
+
 function term_handler(){
   echo "***** Build cancelled by user *****"
   sudo rm -fr "${NEW_ROOTFS_DIR}"
@@ -202,7 +239,7 @@ function term_handler(){
 
 trap 'term_handler' INT
 
-while getopts bm:M:pPvh option
+while getopts bm:M:pPUvh option
 do
   case "${option}"
   in
@@ -215,6 +252,8 @@ do
     p) PREPARE=1
        ;;
     P) PUSH=1
+       ;;
+    u) UPDATE_OFFICIAL=1
        ;;
     h) usage
        exit
@@ -257,6 +296,10 @@ if [ ${PUSH} -eq 1 ]; then
   # Checkout back master and locally delete dist branch
   #git checkout master
   #git branch -D dist
+fi
+
+if [ ${UPDATE_OFFICIAL} -eq 1 ]; then
+  update_library
 fi
 
 rm -fr ${TMP_DIR}
