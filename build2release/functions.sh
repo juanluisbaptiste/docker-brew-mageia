@@ -169,9 +169,10 @@ echo "* Done building image."
 
 function update_library() {
   # Now clone docker official-images repo and update the library build image
+  echo "* Cloning ${OFFICIAL_IMAGES_REPO_URL}"
   cd ${TMP_DIR}
   git clone ${OFFICIAL_IMAGES_REPO_URL}
-  repo_dir=$(echo ${OFFICIAL_IMAGES_REPO}|cut -d'\' -f)
+  repo_dir=$(echo ${OFFICIAL_IMAGES_REPO}|cut -d'/' -f2)
   cd ${repo_dir}
 
   # Get the last commit hash of dist branch
@@ -179,7 +180,7 @@ function update_library() {
   [ $? -gt 0 ] && echo "ERROR: Cannot get last commit from dist branch." && exit 1
 
   # Update library file with new hash
-  if [ ${git_commit} != "" ]; then
+  if [ "${git_commit}" != "" ]; then
     sed -i -r "s/(GitCommit: *).*/\1${git_commit}/" library/mageia
     [ $? -gt 0 ] && echo "ERROR: Cannot update commit hash on library file." && exit 1
   else
