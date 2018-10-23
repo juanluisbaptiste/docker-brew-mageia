@@ -29,6 +29,7 @@ BUILD=0
 PREPARE=0
 PUSH=0
 UPDATE_OFFICIAL=0
+VERBOSE=0
 
 # Include functions
 . ./functions.sh
@@ -36,7 +37,7 @@ UPDATE_OFFICIAL=0
 
 trap 'term_handler' INT
 
-while getopts bm:M:pPUvh option
+while getopts bm:M:pPUvVh option
 do
   case "${option}"
   in
@@ -58,11 +59,15 @@ do
     v) print_version
        exit
        ;;
+    V) VERBOSE=1
+       ;;
     ?) usage
        exit
        ;;
   esac
 done
+
+[ ${VERBOSE} -eq 1 ] && set -x
 
 if [[ ${MGA_VERSION} == *"${MGA_DEPRECATED_VERSIONS}"* ]]; then
   echo "ERROR: Version to build is deprecated." && exit 1
