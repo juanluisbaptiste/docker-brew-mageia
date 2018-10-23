@@ -175,7 +175,7 @@ function update_library() {
   cd ${repo_dir}
 
   # Get the last commit hash of dist branch
-  git_commit=$(git ls-remote ${OFFICIAL_IMAGES_REPO_URL} refs/heads/dist | cut -f 1)
+  git_commit=$(git ls-remote ${MGA_BREW_REPO} refs/heads/dist | cut -f 1)
   [ $? -gt 0 ] && echo "ERROR: Cannot get last commit from dist branch." && exit 1
 
   # Update library file with new hash

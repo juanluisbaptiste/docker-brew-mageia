@@ -21,6 +21,7 @@ MGA_LATEST_VERSION="6"
 MGA_VERSION=${MGA_LATEST_VERSION}
 MGA_PREV_VERSION=$((MGA_VERSION-1))
 MGA_DEPRECATED_VERSIONS="3 4"
+MGA_BREW_REPO="git@github.com:juanluisbaptiste/docker-brew-mageia"
 OFFICIAL_IMAGES_REPO="juanluisbaptiste/official-images"
 OFFICIAL_IMAGES_REPO_URL="git@github.com:${OFFICIAL_IMAGES_REPO}"
 TMP_DIR="/tmp/mga-tmp"
