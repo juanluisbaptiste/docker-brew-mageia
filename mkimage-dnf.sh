@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Script to create Mageia official base images for integration with stackbrew 
+# Script to create Mageia official base images for integration with stackbrew
 # library.
 #
 # Needs to be run from Mageia 6 or greater, as it requires DNF.
@@ -15,26 +15,29 @@ set -e
 mkimg="$(basename "$0")"
 
 usage() {
-	echo >&2 "usage: $mkimg --rootfs=rootfs_path --version=mageia_version [--mirror=url] [--package-manager=(dnf|microdnf|urpmi)] [--with-systemd]"
+	echo >&2 "usage: $mkimg --rootfs=rootfs_path --version=mageia_version [--mirror=url] [--package-manager=(dnf|microdnf|urpmi)] [--forcearch=ARCH] [--with-systemd]"
 	echo >&2 "   ie: $mkimg --rootfs=. --version=6 --with-systemd"
 	echo >&2 "       $mkimg --rootfs=. --version=cauldron --package-manager=dnf --with-systemd"
 	echo >&2 "       $mkimg --rootfs=/tmp/rootfs --version=6 --mirror=http://mirrors.kernel.org/mageia/distrib/6/x86_64/ --with-systemd"
+	echo >&2 "       $mkimg --rootfs=/tmp/rootfs --version=6 --mirror=http://mirrors.kernel.org/mageia/distrib/6/armv7hl/ --forcearch=armv7hl"
 	echo >&2 "       $mkimg --rootfs=. --version=6 --package-manager=microdnf"
 	exit 1
 }
 
-optTemp=$(getopt --options '+d,v:,s,p,h' --longoptions 'rootfs:,version:,mirror:,package-manager:,with-systemd, help' --name mkimage-dnf -- "$@")
+optTemp=$(getopt --options '+d,v:,p:,a:,s,h' --longoptions 'rootfs:,version:,mirror:,package-manager:,forcearch:,with-systemd, help' --name $mkimg -- "$@")
 eval set -- "$optTemp"
 unset optTemp
 
-installversion=
+releasever=
 mirror=
+buildarch=
 while true; do
         case "$1" in
                 -d|--rootfs) dir=$2 ; shift 2 ;;
-                -v|--version) installversion="$2" ; shift 2 ;;
+                -v|--version) releasever="$2" ; shift 2 ;;
                 -m|--mirror) mirror="$2" ; shift 2 ;;
                 -p|--package-manager) pkgmgr="$2" ; shift 2 ;;
+                -a|--forcearch) buildarch="$2" ; shift 2 ;;
                 -s|--with-systemd) systemd=true ; shift ;;
                 -h|--help) usage ;;
                  --) shift ; break ;;
@@ -48,10 +51,38 @@ rootfsDir="$dir/rootfs"
 
 #[ "$dir" ] || usage
 
-if [ -z $installversion ]; then
+if [ ! -x /usr/bin/dnf ]; then
+	echo "Error: DNF is not installed!"
+	echo "Please install DNF before continuing!"
+	exit 1
+fi
+
+if [ ! -z $buildarch -a -z $mirror ]; then
+	echo "Error: Mirror must be specified when setting a specific architecture!"
+	exit 1
+fi
+
+if [ -z $buildarch ]; then
+	# Attempt to identify target arch
+	buildarch="$(rpm --eval '%{_target_cpu}')"
+fi
+
+if [ ! -z $buildarch ]; then
+	# Determine if the arch is not native...
+	rpmbuildarch="$(rpm --eval '%{_target_cpu}')"
+	if [ "$rpmbuildarch" != "$buildarch" ]; then
+		# Check for the existance of qemu-user-static
+		if ! rpm --quiet --query qemu-user-static; then
+			echo "Error: 'qemu-user-static' needs to be installed for non-native rootfs builds!"
+			exit 1
+		fi
+	fi
+fi
+
+if [ -z $releasever ]; then
         # Attempt to match host version
         if [ -r /etc/mageia-release ]; then
-                installversion="$(sed 's/^[^0-9\]*\([0-9.]\+\).*$/\1/' /etc/mageia-release)"
+                releasever="$(sed 's/^[^0-9\]*\([0-9.]\+\).*$/\1/' /etc/mageia-release)"
         else
                 echo "Error: no version supplied and unable to detect host mageia version"
                 exit 1
@@ -64,8 +95,13 @@ if [ ! -z $mirror ]; then
 fi
 
 if [ -z $mirror ]; then
+	# Ensure we are on a Mageia system when not specifying a mirror
+	if [ ! -e /etc/mageia-release ]; then
+		echo "Error: No mirror specified but not on a Mageia system!"
+		exit 1
+	fi
         # If mirror is *not* provided, use mirrorlist
-        reposetup="--disablerepo=* --enablerepo=mageia-x86_64 --enablerepo=updates-x86_64"
+        reposetup="--disablerepo=* --enablerepo=mageia-$buildarch --enablerepo=updates-$buildarch"
 fi
 
 if [ ! -z $pkgmgr ]; then
@@ -81,31 +117,31 @@ fi
 
 # Must be after the non-empty check or otherwise this will fail
 if [ -z $pkgmgr ]; then
-        pkgmgr="dnf urpmi" 
+        pkgmgr="dnf urpmi"
 fi
 
 if [ ! -z $systemd ]; then
         echo -e "--------------------------------------"
         echo -e "Creating image with systemd support."
         echo -e "--------------------------------------\n"
-        systemd="systemd" 
+        systemd="systemd"
 fi
 
 (
         dnf \
-				    --quiet \
             $reposetup \
+            --forcearch="$buildarch" \
             --installroot="$rootfsDir" \
-            --releasever="$installversion" \
+            --releasever="$releasever" \
             --setopt=install_weak_deps=False \
-            --nodocs --assumeyes \
+            --nodocs --assumeyes --quiet \
             install basesystem-minimal $pkgmgr locales locales-en $systemd
 )
 
 # Configure urpmi mirrorlist if urpmi is included on the system
 if [[ $pkgmgr == *"urpmi"* ]]; then
         if [ -x /usr/sbin/urpmi.addmedia ]; then
-                urpmi.addmedia --distrib --mirrorlist "https://mirrors.mageia.org/api/mageia.$installversion.x86_64.list" \
+                urpmi.addmedia --distrib --mirrorlist "https://mirrors.mageia.org/api/mageia.$releasever.$buildarch.list" \
                                --urpmi-root "$rootfsDir"
         fi
 fi
