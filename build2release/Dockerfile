@@ -1,5 +1,5 @@
 FROM mageia:6
-MAINTAINER Juan Luis Baptiste <juan.baptiste@gmail.com>
+MAINTAINER Juan Luis Baptiste <juancho@mageia.org>
 ENV UID=1000
 
 RUN dnf upgrade -y && \
