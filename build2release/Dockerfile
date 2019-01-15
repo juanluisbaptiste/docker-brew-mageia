@@ -3,7 +3,7 @@ MAINTAINER Juan Luis Baptiste <juancho@mageia.org>
 ENV UID=1000
 
 RUN dnf upgrade -y && \
-     dnf install -y git sudo wget && \
+     dnf install -y git sudo wget qemu-user-static && \
     echo "%wheel ALL=(ALL)  NOPASSWD:ALL" > /etc/sudoers.d/01wheel && \
     chmod 440 /etc/sudoers.d/01wheel && \
     useradd -u ${UID} -d /code -G wheel -M mageia
