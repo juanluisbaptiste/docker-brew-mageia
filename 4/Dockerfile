@@ -5,3 +5,6 @@
 FROM scratch
 MAINTAINER "Juan Luis Baptiste" <juancho@mageia.org>
 ADD rootfs-4.tar.xz /
+
+# Add default image command
+CMD ["/bin/bash"]
