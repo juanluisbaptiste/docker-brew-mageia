@@ -16,9 +16,9 @@ shift
 	rm -rf usr/share/cracklib
 	#  i18n
 	rm -rf usr/share/i18n
-	#  yum cache
-	rm -rf var/cache/yum
-	mkdir -p --mode=0755 var/cache/yum
+	#  dnf cache
+	rm -rf var/cache/dnf
+	mkdir -p --mode=0755 var/cache/dnf
 	#  sln
 	rm -rf sbin/sln
 	#  ldconfig
