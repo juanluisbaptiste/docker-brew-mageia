@@ -76,6 +76,8 @@ if [ ! -z $buildarch ]; then
 			echo "Error: 'qemu-user-static' needs to be installed for non-native rootfs builds!"
 			exit 1
 		fi
+		# To ensure qemu-user-static can be used, restart systemd-binfmt
+		systemctl restart systemd-binfmt.service
 	fi
 fi
 
