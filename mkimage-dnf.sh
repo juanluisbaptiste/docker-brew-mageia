@@ -76,6 +76,8 @@ if [ ! -z $buildarch ]; then
 			echo "Error: 'qemu-user-static' needs to be installed for non-native rootfs builds!"
 			exit 1
 		fi
+		# To ensure qemu-user-static can be used, restart systemd-binfmt
+		systemctl restart systemd-binfmt.service
 	fi
 fi
 
@@ -91,7 +93,11 @@ fi
 
 if [ ! -z $mirror ]; then
         # If mirror provided, use it exclusively
-        reposetup="--disablerepo=* --repofrompath=mgarel,$mirror/media/core/release/ --repofrompath=mgaup,$mirror/media/core/updates/ --enablerepo=mgarel --enablerepo=mgaup"
+	# Unfortunately, when using a mirror with --repofrompath,
+	# we don't have a nice way to bootstrap with gpg keys,
+	# so installations fail unless we pass --nogpgcheck
+	# See: https://bugzilla.redhat.com/show_bug.cgi?id=1689591
+        reposetup="--nogpgcheck --disablerepo=* --repofrompath=mgarel,$mirror/media/core/release/ --repofrompath=mgaup,$mirror/media/core/updates/ --enablerepo=mgarel --enablerepo=mgaup"
 fi
 
 if [ -z $mirror ]; then
