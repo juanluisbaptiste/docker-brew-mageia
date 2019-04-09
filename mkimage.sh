@@ -14,7 +14,7 @@ set -e
 mkimg="$(basename "$0")"
 
 usage() {
-	echo >&2 "usage: $mkimg --rootfs=rootfs_path --version=mageia_version [--mirror=url] [--package-manager=(dnf|microdnf|urpmi)] [--forcearch=ARCH] [--with-systemd]"
+	echo >&2 "usage: $mkimg --rootfs=rootfs_path --version=mageia_version [--mirror=url] [--package-manager=(dnf|microdnf|urpmi)] [--forcearch=ARCH] [--with-systemd] [--quiet]"
 	echo >&2 "   ie: $mkimg --rootfs=. --version=6 --with-systemd"
 	echo >&2 "       $mkimg --rootfs=. --version=cauldron --package-manager=dnf --with-systemd"
 	echo >&2 "       $mkimg --rootfs=/tmp/rootfs --version=6 --mirror=http://mirrors.kernel.org/mageia/distrib/6/x86_64/ --with-systemd"
@@ -23,7 +23,7 @@ usage() {
 	exit 1
 }
 
-optTemp=$(getopt --options '+d,v:,p:,a:,s,h' --longoptions 'rootfs:,version:,mirror:,package-manager:,forcearch:,with-systemd, help' --name $mkimg -- "$@")
+optTemp=$(getopt --options '+d,v:,p:,a:,s,q,h' --longoptions 'rootfs:,version:,mirror:,package-manager:,forcearch:,with-systemd,quiet,help' --name $mkimg -- "$@")
 eval set -- "$optTemp"
 unset optTemp
 
@@ -38,6 +38,7 @@ while true; do
                 -p|--package-manager) pkgmgr="$2" ; shift 2 ;;
                 -a|--forcearch) buildarch="$2" ; shift 2 ;;
                 -s|--with-systemd) systemd=true ; shift ;;
+                -q|--quiet) quiet=true ; shift ;;
                 -h|--help) usage ;;
                  --) shift ; break ;;
         esac
@@ -139,7 +140,7 @@ fi
             --installroot="$rootfsDir" \
             --releasever="$releasever" \
             --setopt=install_weak_deps=False \
-            --nodocs --assumeyes --quiet \
+            --nodocs --assumeyes ${quiet: --quiet} \
             install basesystem-minimal $pkgmgr locales locales-en $systemd
 )
 
