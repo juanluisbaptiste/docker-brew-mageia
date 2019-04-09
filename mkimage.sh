@@ -7,7 +7,6 @@
 #
 # Tested working versions are for Mageia 6 onwards (inc. cauldron).
 #
-# Based on mkimage-urpmi.sh
 #
 
 set -e
