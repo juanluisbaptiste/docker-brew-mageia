@@ -90,6 +90,8 @@ git checkout dist
 
 if [ "${ARCH}" == "x86_64" ] || [ "${ARCH}" == "armv7hl" ]; then
   # First delete any old build
+  NEW_ROOTFS_DIR="${ARCH}/${NEW_ROOTFS_DIR}"
+  mkdir -p ${NEW_ROOTFS_DIR}
   ARCH=" -a ${ARCH}"
 else
   echo -e "ERROR: Build architecture not supported.\n" && exit 1
