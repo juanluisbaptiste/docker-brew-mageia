@@ -33,6 +33,7 @@ CHECKOUT_DIST=0
 UPDATE_OFFICIAL=0
 VERBOSE=0
 ARCH="x86_64"
+BUILD_DIR="$(pwd)"
 
 # Include functions
 . ./functions.sh
@@ -40,13 +41,15 @@ ARCH="x86_64"
 
 trap 'term_handler' INT
 
-while getopts a:bdm:M:pPUvVh option
+while getopts a:bB:dm:M:pPUvVh option
 do
   case "${option}"
   in
     a) ARCH=${OPTARG}
        ;;
     b) BUILD=1
+       ;;
+    B) BUILD_DIR=${OPTARG}
        ;;
     d) CHECKOUT_DIST=1
        ;;
@@ -80,8 +83,9 @@ if [[ ${MGA_VERSION} == *"${MGA_DEPRECATED_VERSIONS}"* ]]; then
   echo "ERROR: Version to build is deprecated." && exit 1
 fi
 
-NEW_ROOTFS_DIR="$(pwd)/${MGA_VERSION}/"
-PREV_ROOTFS_DIR="$(pwd)/${MGA_PREV_VERSION}/"
+# NEW_ROOTFS_DIR="$(pwd)/${MGA_VERSION}/"
+NEW_ROOTFS_DIR="${BUILD_DIR}/${MGA_VERSION}/"
+PREV_ROOTFS_DIR="${BUILD_DIR}/${MGA_PREV_VERSION}/"
 mkdir ${TMP_DIR}
 
 # Checkout dist branch to get the rootfs file from older releases
