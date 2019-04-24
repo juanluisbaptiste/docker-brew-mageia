@@ -163,7 +163,7 @@ function build_image() {
     sudo ./mkimage-urpmi.sh --rootfs="${NEW_ROOTFS_DIR}/" --version=${MGA_VERSION}
     [ $? -gt 0 ] && echo "ERROR: Cannot build rootfs file." && exit 1
   else
-    sudo ./mkimage-dnf.sh --rootfs="${NEW_ROOTFS_DIR}/" --version=${MGA_VERSION}
+    sudo ./mkimage.sh --rootfs="${NEW_ROOTFS_DIR}/" --version=${MGA_VERSION}
     [ $? -gt 0 ] && echo "ERROR: Cannot build rootfs file." && exit 1
 echo "* Done building image."
   fi
