@@ -31,6 +31,7 @@ PREPARE=0
 PUSH=0
 UPDATE_OFFICIAL=0
 VERBOSE=0
+ARCH="x86_64"
 
 # Include functions
 . ./functions.sh
@@ -38,10 +39,12 @@ VERBOSE=0
 
 trap 'term_handler' INT
 
-while getopts bm:M:pPUvVh option
+while getopts a:bm:M:pPUvVh option
 do
   case "${option}"
   in
+    a) ARCH=${OPTARG}
+       ;;
     b) BUILD=1
        ;;
     m) MGA_VERSION=${OPTARG}
@@ -84,6 +87,13 @@ git fetch
 [ $? -gt 0 ] && echo "ERROR: Cannot fetch remote branches." && exit 1
 git checkout dist
 [ $? -gt 0 ] && echo "ERROR: Cannot checkout dist branch." && exit 1
+
+if [ "${ARCH}" == "x86_64" ] || [ "${ARCH}" == "armv7hl" ]; then
+  # First delete any old build
+  ARCH=" -a ${ARCH}"
+else
+  echo -e "ERROR: Build architecture not supported.\n" && exit 1
+fi
 
 if [ ${BUILD} -eq 1 ]; then
   # First delete any old build
