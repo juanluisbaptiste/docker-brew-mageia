@@ -12,6 +12,7 @@ root filesystem to juanluisbaptiste/docker-brew-mageia.
 
 OPTIONS:
 -b    Build image.
+-d    Checkout dist branch.
 -m    Mageia version to push/build.
 -M    Update message.
 -p    Only prepare the dist branch for commit & push (backup rootfs files and

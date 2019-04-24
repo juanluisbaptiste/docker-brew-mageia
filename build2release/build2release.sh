@@ -29,6 +29,7 @@ ROOTFS_FILE_NAME="rootfs.tar.xz"
 BUILD=0
 PREPARE=0
 PUSH=0
+CHECKOUT_DIST=0
 UPDATE_OFFICIAL=0
 VERBOSE=0
 ARCH="x86_64"
@@ -39,13 +40,15 @@ ARCH="x86_64"
 
 trap 'term_handler' INT
 
-while getopts a:bm:M:pPUvVh option
+while getopts a:bdm:M:pPUvVh option
 do
   case "${option}"
   in
     a) ARCH=${OPTARG}
        ;;
     b) BUILD=1
+       ;;
+    d) CHECKOUT_DIST=1
        ;;
     m) MGA_VERSION=${OPTARG}
        ;;
@@ -82,11 +85,13 @@ PREV_ROOTFS_DIR="$(pwd)/${MGA_PREV_VERSION}/"
 mkdir ${TMP_DIR}
 
 # Checkout dist branch to get the rootfs file from older releases
-echo "* Checking out dist branch:"
-git fetch
-[ $? -gt 0 ] && echo "ERROR: Cannot fetch remote branches." && exit 1
-git checkout dist
-[ $? -gt 0 ] && echo "ERROR: Cannot checkout dist branch." && exit 1
+if [ ${CHECKOUT_DIST} -eq 1 ]; then
+  echo "* Checking out dist branch:"
+  git fetch
+  [ $? -gt 0 ] && echo "ERROR: Cannot fetch remote branches." && exit 1
+  git checkout dist
+  [ $? -gt 0 ] && echo "ERROR: Cannot checkout dist branch." && exit 1
+fi
 
 if [ "${ARCH}" == "x86_64" ] || [ "${ARCH}" == "armv7hl" ]; then
   # First delete any old build
