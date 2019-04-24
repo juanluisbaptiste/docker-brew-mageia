@@ -97,7 +97,7 @@ if [ ${CHECKOUT_DIST} -eq 1 ]; then
   [ $? -gt 0 ] && echo "ERROR: Cannot checkout dist branch." && exit 1
 fi
 
-if [ "${ARCH}" == "x86_64" ] || [ "${ARCH}" == "armv7h1" ]; then
+if [ "${ARCH}" == "x86_64" ] || [ "${ARCH}" == "armv7hl" ]; then
   # First delete any old build
   NEW_ROOTFS_DIR="${NEW_ROOTFS_DIR}/${ARCH}"
   mkdir -p ${NEW_ROOTFS_DIR}
