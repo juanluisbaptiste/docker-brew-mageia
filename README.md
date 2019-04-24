@@ -7,8 +7,7 @@ http://www.mageia.org
 
 ## Build Instructions
 
-  * If building mageia images >= 6, use _mkimage-dnf.sh_
-  * If building mageia images < 6, use _mkimage-urpmi.sh_
+  * Use _mkimage.sh_
 
 ## How to run the images
 
