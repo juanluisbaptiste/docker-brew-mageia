@@ -11,6 +11,7 @@ This script will push (and optionally build using mkimage-dnf.sh) a new mageia
 root filesystem to juanluisbaptiste/docker-brew-mageia.
 
 OPTIONS:
+-a    Architecture to build.
 -b    Build image.
 -B    Build directory.
 -d    Checkout dist branch.
@@ -19,6 +20,7 @@ OPTIONS:
 -p    Only prepare the dist branch for commit & push (backup rootfs files and
       recreate a clean dist branch).
 -P    Commit and push new rootfs file (will call -p).
+-r    Mirror to use. Mandatory when building non x86_64 archquitectures.
 -U    Update mageia docker library file on own fork.
 -v    Print version.
 -h    Print help.
@@ -159,14 +161,22 @@ function prepare_branch () {
 function build_image() {
   echo "* Building mageia ${MGA_VERSION}  rootfs image:"
   # Create new rootfs file
-  if [ ${MGA_VERSION} -lt 6 ]; then
-    sudo ./mkimage-urpmi.sh --rootfs="${NEW_ROOTFS_DIR}/" --version=${MGA_VERSION}
-    [ $? -gt 0 ] && echo "ERROR: Cannot build rootfs file." && exit 1
-  else
-    sudo ./mkimage.sh --rootfs="${NEW_ROOTFS_DIR}/" --version=${MGA_VERSION}
+  # if [ ${MGA_VERSION} -lt 6 ]; then
+  #   sudo ./mkimage-urpmi.sh --rootfs="${NEW_ROOTFS_DIR}/" --version=${MGA_VERSION}
+  #   [ $? -gt 0 ] && echo "ERROR: Cannot build rootfs file." && exit 1
+  # else
+  if [ "${ARCH}" != "x86_64" ]; then
+    if [ "${MIRROR}" != "" ]; then
+      MIRROR=" --mirror=${MIRROR}"
+    else
+      echo -e "ERROR: When building any architecture different from x86_64 wou need to set a mirror with -r parameter." && exit 1
+    fi
+  fi
+
+    sudo ./mkimage.sh --rootfs="${NEW_ROOTFS_DIR}/" --version=${MGA_VERSION} -a ${ARCH} ${MIRROR}
     [ $? -gt 0 ] && echo "ERROR: Cannot build rootfs file." && exit 1
 echo "* Done building image."
-  fi
+  # fi
 }
 
 function update_library() {

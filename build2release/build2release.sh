@@ -41,7 +41,7 @@ BUILD_DIR="$(pwd)"
 
 trap 'term_handler' INT
 
-while getopts a:bB:dm:M:pPUvVh option
+while getopts a:bB:dm:M:pPr:UvVh option
 do
   case "${option}"
   in
@@ -61,6 +61,8 @@ do
        ;;
     P) PUSH=1
        ;;
+    r) MIRROR=${OPTARG}
+      ;;
     U) UPDATE_OFFICIAL=1
        ;;
     h) usage
@@ -99,16 +101,17 @@ fi
 
 if [ "${ARCH}" == "x86_64" ] || [ "${ARCH}" == "armv7hl" ]; then
   # First delete any old build
+  echo "* Building for architecture: ${ARCH}"
   NEW_ROOTFS_DIR="${NEW_ROOTFS_DIR}/${ARCH}"
   mkdir -p ${NEW_ROOTFS_DIR}
-  ARCH=" -a ${ARCH}"
+  ARCH="${ARCH}"
 else
   echo -e "ERROR: Build architecture not supported.\n" && exit 1
 fi
 
 if [ ${BUILD} -eq 1 ]; then
   # First delete any old build
-  rm -fr ${MGA_VERSION:?}/${ROOTFS_FILE_NAME}
+  rm -fr ${MGA_VERSION:?}/${ARCH}/${ROOTFS_FILE_NAME}
   build_image
 fi
 
