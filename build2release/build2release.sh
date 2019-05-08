@@ -24,7 +24,7 @@ MGA_DEPRECATED_VERSIONS="3 4"
 MGA_BREW_REPO="git@github.com:juanluisbaptiste/docker-brew-mageia"
 OFFICIAL_IMAGES_REPO="juanluisbaptiste/official-images"
 OFFICIAL_IMAGES_REPO_URL="git@github.com:${OFFICIAL_IMAGES_REPO}"
-TMP_DIR="/tmp/mga-tmp"
+TMP_DIR="$(mktemp -d)"
 ROOTFS_FILE_NAME="rootfs.tar.xz"
 BUILD=0
 PREPARE=0
@@ -86,7 +86,7 @@ fi
 # NEW_ROOTFS_DIR="$(pwd)/${MGA_VERSION}/"
 NEW_ROOTFS_DIR="${BUILD_DIR}/${MGA_VERSION}/"
 PREV_ROOTFS_DIR="${BUILD_DIR}/${MGA_PREV_VERSION}/"
-mkdir ${TMP_DIR}
+# mkdir ${TMP_DIR}
 
 # Checkout dist branch to get the rootfs file from older releases
 if [ ${CHECKOUT_DIST} -eq 1 ]; then
