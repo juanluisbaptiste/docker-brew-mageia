@@ -147,7 +147,7 @@ fi
             --installroot="$rootfsDir" \
             --releasever="$releasever" \
             --setopt=install_weak_deps=False \
-            --nodocs --assumeyes ${quiet: --quiet} \
+            --nodocs --assumeyes ${quiet:\--quiet} \
             install basesystem-minimal $pkgmgr locales locales-en $extrapkgs
 )
 
