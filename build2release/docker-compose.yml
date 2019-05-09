@@ -1,0 +1,11 @@
+version: '3'
+services:
+  mageia:
+    image: juanluisbaptiste/mageia:build2release
+    build: build2release
+    tty: true
+    stdin_open: true
+    volumes:
+      - $PWD:/code
+      - $HOME/.ssh/:/code/.ssh
+      - $HOME/.gitconfig:/code/.gitconfig
