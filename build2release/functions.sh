@@ -36,6 +36,9 @@ function prepare() {
   # the wrong branch
   dist_branch_exists="$(git branch|grep dist)"
   if [ "${dist_branch_exists}" == "* dist" ]; then
+    # Checkout dist branch to backup existing images
+    git checkout dist
+
     #Check if the previous version is deprecated and if not back it up
     if [[ ${MGA_PREV_VERSION} != *"${MGA_DEPRECATED_VERSIONS}"* ]]; then
       backup_previous_version
