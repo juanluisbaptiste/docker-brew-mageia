@@ -86,8 +86,9 @@ if [[ ${MGA_VERSION} == *"${MGA_DEPRECATED_VERSIONS}"* ]]; then
 fi
 
 # NEW_ROOTFS_DIR="$(pwd)/${MGA_VERSION}/"
-NEW_ROOTFS_DIR="${BUILD_DIR}/${MGA_VERSION}/"
-PREV_ROOTFS_DIR="${BUILD_DIR}/${MGA_PREV_VERSION}/"
+NEW_ROOTFS_DIR="${BUILD_DIR}/${MGA_VERSION}/${ARCH}"
+PREV_ROOTFS_DIR="${BUILD_DIR}/${MGA_PREV_VERSION}/${ARCH}"
+mkdir -p ${NEW_ROOTFS_DIR}
 # mkdir ${TMP_DIR}
 
 # Checkout dist branch to get the rootfs file from older releases
