@@ -50,17 +50,7 @@ function prepare() {
     fi
     backup_new_version
 
-    echo "* Delete local dist branch:"
-    # Delete it locally and recreate it so it only has a single commit
-    git checkout master
-    git branch -D dist
-    [ $? -gt 0 ] && echo "ERROR: Cannot delete local dist branch." && exit 1
-
-    echo "* Checking out new empty dist branch:"
-    # Checkout new dist branch based on master and commit image on that branch.
-    git checkout -b dist master
-    [ $? -gt 0 ] && echo "ERROR: Cannot create dist branch." && exit 1
-
+    prepare_branch
     restore_previous_version
     restore_new_version
   else
