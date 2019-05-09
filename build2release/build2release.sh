@@ -100,13 +100,7 @@ if [ ${CHECKOUT_DIST} -eq 1 ]; then
   [ $? -gt 0 ] && echo "ERROR: Cannot checkout dist branch." && exit 1
 fi
 
-if [ "${ARCH}" == "x86_64" ] || [ "${ARCH}" == "armv7hl" ]; then
-  # First delete any old build
-  echo "* Building for architecture: ${ARCH}"
-  NEW_ROOTFS_DIR="${NEW_ROOTFS_DIR}/${ARCH}"
-  mkdir -p ${NEW_ROOTFS_DIR}
-  ARCH="${ARCH}"
-else
+if  [ "${ARCH}" != "x86_64" ] && [ "${ARCH}" != "armv7hl" ]; then
   echo -e "ERROR: Build architecture not supported.\n" && exit 1
 fi
 
