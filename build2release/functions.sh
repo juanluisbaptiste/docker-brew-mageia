@@ -35,10 +35,12 @@ function prepare() {
   # First check if dist branch exists and is checkd out to avoid pushing to
   # the wrong branch
   dist_branch_exists="$(git branch|grep dist)"
-  if [ "${dist_branch_exists}" == "* dist" ]; then
+  if [ $? -eq 0 ]; then
     # Checkout dist branch to backup existing images
     git checkout dist
-
+    if [ $? != 0 ]; then
+      echo "ERROR: Cannot checkout dist branch." && exit 1
+    fi
     #Check if the previous version is deprecated and if not back it up
     if [[ ${MGA_PREV_VERSION} != *"${MGA_DEPRECATED_VERSIONS}"* ]]; then
       backup_previous_version
@@ -63,7 +65,7 @@ function push () {
   # commit_msg="Automated Image Update by ${0} v. ${VERSION}"
 
   dist_branch_exists="$(git branch|grep dist)"
-  if [ "${dist_branch_exists}" == "* dist" ]; then
+  if [ $? -eq 0 ]; then
     # Prepare the branch first for commit & push
     prepare
 
@@ -84,6 +86,8 @@ function push () {
     git push -f origin dist
     #git push -f origin
     [ $? -gt 0 ] && echo "ERROR: Cannot force-push dist branch." && exit 1
+  else
+    echo "ERROR: dist branch does not exist" && exit 1
   fi
 }
 function backup_rootfs () {
