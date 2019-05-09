@@ -99,11 +99,7 @@ fi
 if [ ${BUILD} -eq 1 ]; then
   # Checkout dist branch to get the rootfs file from older releases
   if [ ${CHECKOUT_DIST} -eq 1 ]; then
-    echo "* Checking out dist branch:"
-    git fetch
-    [ $? -gt 0 ] && echo "ERROR: Cannot fetch remote branches." && exit 1
-    git checkout dist
-    [ $? -gt 0 ] && echo "ERROR: Cannot checkout dist branch." && exit 1
+    prepare
   fi
   # First delete any old build
   rm -fr ${MGA_VERSION:?}/${ARCH}/${ROOTFS_FILE_NAME}
