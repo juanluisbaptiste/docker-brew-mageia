@@ -15,7 +15,7 @@
 # to make a brand new one that doesn't contain that older tarball commit
 
 # This script version
-VERSION=0.2
+VERSION=0.3
 # Set default version
 MGA_LATEST_VERSION="6"
 MGA_VERSION=${MGA_LATEST_VERSION}
