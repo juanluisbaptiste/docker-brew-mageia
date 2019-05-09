@@ -91,20 +91,20 @@ PREV_ROOTFS_DIR="${BUILD_DIR}/${MGA_PREV_VERSION}/${ARCH}"
 mkdir -p ${NEW_ROOTFS_DIR}
 # mkdir ${TMP_DIR}
 
-# Checkout dist branch to get the rootfs file from older releases
-if [ ${CHECKOUT_DIST} -eq 1 ]; then
-  echo "* Checking out dist branch:"
-  git fetch
-  [ $? -gt 0 ] && echo "ERROR: Cannot fetch remote branches." && exit 1
-  git checkout dist
-  [ $? -gt 0 ] && echo "ERROR: Cannot checkout dist branch." && exit 1
-fi
 
 if  [ "${ARCH}" != "x86_64" ] && [ "${ARCH}" != "armv7hl" ]; then
   echo -e "ERROR: Build architecture not supported.\n" && exit 1
 fi
 
 if [ ${BUILD} -eq 1 ]; then
+  # Checkout dist branch to get the rootfs file from older releases
+  if [ ${CHECKOUT_DIST} -eq 1 ]; then
+    echo "* Checking out dist branch:"
+    git fetch
+    [ $? -gt 0 ] && echo "ERROR: Cannot fetch remote branches." && exit 1
+    git checkout dist
+    [ $? -gt 0 ] && echo "ERROR: Cannot checkout dist branch." && exit 1
+  fi
   # First delete any old build
   rm -fr ${MGA_VERSION:?}/${ARCH}/${ROOTFS_FILE_NAME}
   build_image
