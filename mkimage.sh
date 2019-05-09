@@ -57,7 +57,7 @@ if [ ! -x /usr/bin/dnf ]; then
 	exit 1
 fi
 
-if [ ! -z $buildarch -a -z $mirror ]; then
+if [ ! -z "$buildarch" -a -z "$mirror" ]; then
 	echo "Error: Mirror must be specified when setting a specific architecture!"
 	exit 1
 fi
