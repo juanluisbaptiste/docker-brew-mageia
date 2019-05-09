@@ -156,13 +156,15 @@ function prepare_branch () {
 }
 
 function build_image() {
-  echo "* Building mageia ${MGA_VERSION}  rootfs image:"
+  echo "* Building mageia ${MGA_VERSION}  rootfs image for architecture: ${ARCH}"
+
   # Create new rootfs file
   # if [ ${MGA_VERSION} -lt 6 ]; then
   #   sudo ./mkimage-urpmi.sh --rootfs="${NEW_ROOTFS_DIR}/" --version=${MGA_VERSION}
   #   [ $? -gt 0 ] && echo "ERROR: Cannot build rootfs file." && exit 1
   # else
   if [ "${ARCH}" != "x86_64" ]; then
+    ARCH=" -a ${ARCH}"
     if [ "${MIRROR}" != "" ]; then
       MIRROR=" --mirror=${MIRROR}"
     else
@@ -170,7 +172,7 @@ function build_image() {
     fi
   fi
 
-    sudo ./mkimage.sh --rootfs="${NEW_ROOTFS_DIR}/" --version=${MGA_VERSION} -a ${ARCH} ${MIRROR}
+    sudo ./mkimage.sh --rootfs="${NEW_ROOTFS_DIR}/" --version=${MGA_VERSION} ${ARCH} ${MIRROR}
     [ $? -gt 0 ] && echo "ERROR: Cannot build rootfs file." && exit 1
 echo "* Done building image."
   # fi
