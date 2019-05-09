@@ -98,22 +98,22 @@ function backup_rootfs () {
 
   if [ $? -eq 0 ]; then
     echo "* Moving rootfs file ${rootfs_file} release away:"
-    mkdir -p ${TMP_DIR}
-    sudo cp ${rootfs_file_path} ${TMP_DIR}/${rootfs_file}-${version}
+    mkdir -p ${TMP_DIR}/${arch}
+    sudo cp ${rootfs_file_path} ${TMP_DIR}/${arch}/${rootfs_file}-${version}
     [ $? -gt 0 ] && echo "ERROR: Cannot copy rootfs file: ${rootfs_file}" && exit 1
   fi
 }
 
 function backup_previous_version () {
-  backup_rootfs "${PREV_ROOTFS_DIR}/${ROOTFS_FILE_NAME}" ${MGA_PREV_VERSION}
+  backup_rootfs "${PREV_ROOTFS_DIR}/${arch}/${ROOTFS_FILE_NAME}" ${MGA_PREV_VERSION}
 }
 
 function backup_new_version () {
-  backup_rootfs "${NEW_ROOTFS_DIR}/${ROOTFS_FILE_NAME}" ${MGA_VERSION}
+  backup_rootfs "${NEW_ROOTFS_DIR}/${arch}/${ROOTFS_FILE_NAME}" ${MGA_VERSION}
 }
 
 function backup_next_version () {
-  backup_rootfs "${NEXT_ROOTFS_DIR}/${ROOTFS_FILE_NAME}" ${MGA_VERSION}
+  backup_rootfs "${NEXT_ROOTFS_DIR}/${arch}/${ROOTFS_FILE_NAME}" ${MGA_VERSION}
 }
 
 function restore_previous_version () {
@@ -129,10 +129,10 @@ function restore_rootfs () {
   version="${1}"
   rootfs_file="${2:-$ROOTFS_FILE_NAME}"
 
-  if [ -f "${TMP_DIR}/${rootfs_file}-${version}" ]; then
+  if [ -f "${TMP_DIR}/${arch}/${rootfs_file}-${version}" ]; then
     # Copy back old relase rootfs files
     echo "* Moving back ${ROOTFS_FILE_NAME} into dist branch:"
-    sudo cp ${TMP_DIR}/${rootfs_file}-${version} "$(pwd)/${version}/${rootfs_file}"
+    sudo cp ${TMP_DIR}/${arch}/${rootfs_file}-${version} "$(pwd)/${version}/${arch}/${rootfs_file}"
     [ $? -gt 0 ] && echo "ERROR: Cannot copy back rootfs file." && exit 1
   fi
 }
