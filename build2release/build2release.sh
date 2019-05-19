@@ -92,7 +92,7 @@ mkdir -p ${NEW_ROOTFS_DIR}
 # mkdir ${TMP_DIR}
 
 
-if  [ "${ARCH}" != "x86_64" ] && [ "${ARCH}" != "armv7hl" ]; then
+if  [ "${ARCH}" != "x86_64" ] && [ "${ARCH}" != "armv7hl" ] && [ "${ARCH}" != "aarch64" ]; then
   echo -e "ERROR: Build architecture not supported.\n" && exit 1
 fi
 
