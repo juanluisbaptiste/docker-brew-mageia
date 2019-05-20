@@ -150,7 +150,7 @@ function restore_rootfs () {
   if [ -f "${TMP_DIR}/${ARCH}/${rootfs_file}-${version}" ]; then
     # Copy back old relase rootfs files
     echo "* Moving back ${ROOTFS_FILE_NAME} into dist branch:"
-    sudo cp ${TMP_DIR}/${ARCH}/${rootfs_file}-${version} "$(pwd)/${version}/${ARCH}/${rootfs_file}"
+    sudo cp ${TMP_DIR}/${ARCH}/${rootfs_file}-${version} "$(pwd)/dist/${version}/${ARCH}/${rootfs_file}"
     [ $? -gt 0 ] && echo "ERROR: Cannot copy back rootfs file." && exit 1
   fi
 }
