@@ -60,6 +60,20 @@ function prepare() {
   fi
 }
 
+function prepare_branch () {
+  echo "* Delete local dist branch:"
+  # Delete it locally and recreate it so it only has a single commit
+  git checkout master
+  git branch -D dist
+  [ $? -gt 0 ] && echo "ERROR: Cannot delete local dist branch." && exit 1
+
+  echo "* Checking out new empty dist branch:"
+  # Checkout new dist branch based on master and commit image on that branch.
+  git checkout -b dist master
+  [ $? -gt 0 ] && echo "ERROR: Cannot create dist branch." && exit 1
+
+}
+
 function push () {
   commit_msg="${COMMIT_MSG:-Automated Image Update by ${0} v. ${VERSION}}"
   # commit_msg="Automated Image Update by ${0} v. ${VERSION}"
@@ -139,20 +153,6 @@ function restore_rootfs () {
     sudo cp ${TMP_DIR}/${ARCH}/${rootfs_file}-${version} "$(pwd)/${version}/${ARCH}/${rootfs_file}"
     [ $? -gt 0 ] && echo "ERROR: Cannot copy back rootfs file." && exit 1
   fi
-}
-
-function prepare_branch () {
-  echo "* Delete local dist branch:"
-  # Delete it locally and recreate it so it only has a single commit
-  git checkout master
-  git branch -D dist
-  [ $? -gt 0 ] && echo "ERROR: Cannot delete local dist branch." && exit 1
-
-  echo "* Checking out new empty dist branch:"
-  # Checkout new dist branch based on master and commit image on that branch.
-  git checkout -b dist master
-  [ $? -gt 0 ] && echo "ERROR: Cannot create dist branch." && exit 1
-
 }
 
 function build_image() {
