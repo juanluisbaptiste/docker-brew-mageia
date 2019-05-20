@@ -85,12 +85,8 @@ if [[ ${MGA_VERSION} == *"${MGA_DEPRECATED_VERSIONS}"* ]]; then
   echo "ERROR: Version to build is deprecated." && exit 1
 fi
 
-# NEW_ROOTFS_DIR="$(pwd)/${MGA_VERSION}/"
 NEW_ROOTFS_DIR="${BUILD_DIR}/dist/${MGA_VERSION}/${ARCH}"
-PREV_ROOTFS_DIR="${BUILD_DIR}/dist/${MGA_PREV_VERSION}/${ARCH}"
 mkdir -p ${NEW_ROOTFS_DIR}
-# mkdir ${TMP_DIR}
-
 
 if  [ "${ARCH}" != "x86_64" ] && [ "${ARCH}" != "armv7hl" ] && [ "${ARCH}" != "aarch64" ]; then
   echo -e "ERROR: Build architecture not supported.\n" && exit 1
@@ -102,7 +98,7 @@ if [ ${BUILD} -eq 1 ]; then
     prepare
   fi
   # First delete any old build
-  rm -fr ${MGA_VERSION:?}/${ARCH}/${ROOTFS_FILE_NAME}
+  rm -fr dist/${MGA_VERSION:?}/${ARCH}/${ROOTFS_FILE_NAME}
   build_image
 fi
 

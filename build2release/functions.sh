@@ -43,18 +43,10 @@ function prepare() {
     fi
     #Check if the previous version is deprecated and if not back it up
     if [[ ${MGA_PREV_VERSION} != *"${MGA_DEPRECATED_VERSIONS}"* ]]; then
-      backup_previous_version
+      backup_previous_versions
+      prepare_branch
+      restore_previous_versions
     fi
-    if [[ ${MGA_VERSION} -lt ${MGA_LATEST_VERSION} ]]; then
-    #if [ ${MGA_VERSION} -ge 6 ]; then
-      NEXT_ROOTFS_DIR="$(pwd)/${MGA_LATEST_VERSION}/"
-      backup_next_version
-    fi
-    backup_new_version
-
-    prepare_branch
-    restore_previous_version
-    restore_new_version
   else
     echo "ERROR: dist branch does not exist !!" && exit 1
   fi
@@ -104,53 +96,19 @@ function push () {
     echo "ERROR: dist branch does not exist" && exit 1
   fi
 }
-function backup_rootfs () {
-  # Check if there's a rootfs tarball for a previous mageia version and move it
-  # away before deleting the dist branch
 
-  rootfs_file_path="${1}"
-  rootfs_file=$(basename "${rootfs_file_path}")
-  version="${2}"
-  ls ${rootfs_file_path} > /dev/null 2>&1
-  # ls ${MGA_PREV_VERSION}/${ROOTFS_FILE_NAME} > /dev/null 2>&1
-
-  if [ $? -eq 0 ]; then
-    echo "* Moving rootfs file ${rootfs_file} release away:"
-    mkdir -p ${TMP_DIR}/${ARCH}
-    sudo cp ${rootfs_file_path} ${TMP_DIR}/${ARCH}/${rootfs_file}-${version}
-    [ $? -gt 0 ] && echo "ERROR: Cannot copy rootfs file: ${rootfs_file}" && exit 1
-  fi
+function backup_previous_versions () {
+  echo "* Backing up existing images:"
+  mkdir -p ${TMP_DIR}/
+  sudo cp -rp ${BUILD_DIR}/dist ${TMP_DIR}/
+  [ $? -gt 0 ] && echo "ERROR: Cannot backup existing images." && exit 1
 }
 
-function backup_previous_version () {
-  backup_rootfs "${PREV_ROOTFS_DIR}/${ROOTFS_FILE_NAME}" ${MGA_PREV_VERSION}
-}
-
-function backup_new_version () {
-  backup_rootfs "${NEW_ROOTFS_DIR}/${ROOTFS_FILE_NAME}" ${MGA_VERSION}
-}
-
-function backup_next_version () {
-  backup_rootfs "${NEXT_ROOTFS_DIR}/${ROOTFS_FILE_NAME}" ${MGA_VERSION}
-}
-
-function restore_previous_version () {
-  restore_rootfs ${MGA_PREV_VERSION} "${ROOTFS_FILE_NAME}"
-}
-
-function restore_new_version () {
-  restore_rootfs ${MGA_VERSION}
-}
-
-function restore_rootfs () {
-  #restore_file="${1}"
-  version="${1}"
-  rootfs_file="${2:-$ROOTFS_FILE_NAME}"
-
-  if [ -f "${TMP_DIR}/${ARCH}/${rootfs_file}-${version}" ]; then
+function restore_previous_versions () {
+  if [ -d "${TMP_DIR}/dist" ]; then
     # Copy back old relase rootfs files
-    echo "* Moving back ${ROOTFS_FILE_NAME} into dist branch:"
-    sudo cp ${TMP_DIR}/${ARCH}/${rootfs_file}-${version} "$(pwd)/dist/${version}/${ARCH}/${rootfs_file}"
+    echo "* Restoring images into dist branch:"
+    sudo cp -rpf ${TMP_DIR}/dist ${BUILD_DIR}/
     [ $? -gt 0 ] && echo "ERROR: Cannot copy back rootfs file." && exit 1
   fi
 }
@@ -158,11 +116,6 @@ function restore_rootfs () {
 function build_image() {
   echo "* Building mageia ${MGA_VERSION}  rootfs image for architecture: ${ARCH}"
 
-  # Create new rootfs file
-  # if [ ${MGA_VERSION} -lt 6 ]; then
-  #   sudo ./mkimage-urpmi.sh --rootfs="${NEW_ROOTFS_DIR}/" --version=${MGA_VERSION}
-  #   [ $? -gt 0 ] && echo "ERROR: Cannot build rootfs file." && exit 1
-  # else
   if [ "${ARCH}" != "x86_64" ]; then
     ARCH=" -a ${ARCH}"
     if [ "${MIRROR}" != "" ]; then
