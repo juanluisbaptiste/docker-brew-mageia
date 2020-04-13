@@ -3,8 +3,7 @@
 # Archquitectures to build for each supported versions
 declare -A MGA_SUPPORTED_ARCHS
 MGA_SUPPORTED_ARCHS[6]="x86_64 armv7hl"
-# MGA_SUPPORTED_ARCHS[7]="x86_64 aarch64 armv7hl"
-# MGA_SUPPORTED_ARCHS[7]="x86_64"
+MGA_SUPPORTED_ARCHS[7]="x86_64 aarch64 armv7hl"
 
 # Default mirror to use for all builds
 MIRROR="http://distrib-coffee.ipsl.jussieu.fr/pub/linux/Mageia/distrib/"
