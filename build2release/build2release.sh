@@ -26,6 +26,7 @@ SILENT=1
 BUILD_DIR="$(mktemp -d)"
 DEBUG_OUTPUT=" 2>&1 >/dev/null "
 CLEANUP_BUILD_FILES=0
+PROGRAM_NAME=$(echo ${0}|tr -d './')
 
 # Include functions
 . ./functions.sh
@@ -62,7 +63,7 @@ do
   esac
 done
 
-print_msg "${0} - v.${VERSION}"
+print_msg "${PROGRAM_NAME} - v.${VERSION}"
 
 mkdir -p ${BUILD_DIR}/build
 rm -f ${BUILD_LOG_FILE}
