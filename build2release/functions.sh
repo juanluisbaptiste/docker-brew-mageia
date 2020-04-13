@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# Archquitectures to build for each supported versions
+declare -A MGA_SUPPORTED_ARCHS
+MGA_SUPPORTED_ARCHS[6]="x86_64 armv7hl"
+# MGA_SUPPORTED_ARCHS[7]="x86_64 aarch64 armv7hl"
+# MGA_SUPPORTED_ARCHS[7]="x86_64"
+
+# Default mirror to use for all builds
+MIRROR="http://distrib-coffee.ipsl.jussieu.fr/pub/linux/Mageia/distrib/"
+MGA_BREW_REPO="git@github.com:juanluisbaptiste/docker-brew-mageia"
+OFFICIAL_IMAGES_REPO="juanluisbaptiste/official-images"
+OFFICIAL_IMAGES_REPO_URL="git@github.com:${OFFICIAL_IMAGES_REPO}"
+# DATE=$(date +%m-%d-%Y_%H%M%S)
+BUILD_LOG_FILE="${PWD}/mga-build.out"
+
 usage()
 {
 cat << EOF
@@ -11,18 +25,13 @@ This script will push (and optionally build using mkimage-dnf.sh) a new mageia
 root filesystem to juanluisbaptiste/docker-brew-mageia.
 
 OPTIONS:
--a    Architecture to build.
 -b    Build image.
 -B    Build directory.
--d    Checkout dist branch.
--m    Mageia version to push/build.
--M    Update message.
--p    Only prepare the dist branch for commit & push (backup rootfs files and
-      recreate a clean dist branch).
--P    Commit and push new rootfs file (will call -p).
--r    Mirror to use. Mandatory when building non x86_64 archquitectures.
+-p    Commit and push new images.
+-r    Mirror to use.
 -U    Update mageia docker library file on own fork.
--v    Print version.
+-v    Verbose mode.
+-V    Debug mode.
 -h    Print help.
 EOF
 }
@@ -31,113 +40,112 @@ function print_version() {
   echo -e "Version: ${VERSION}\n"
 }
 
-function prepare() {
-  # First check if dist branch exists and is checkd out to avoid pushing to
-  # the wrong branch
-  dist_branch_exists="$(git branch|grep dist)"
-  if [ $? -eq 0 ]; then
-    # Checkout dist branch to backup existing images
-    git checkout dist
-    if [ $? != 0 ]; then
-      echo "ERROR: Cannot checkout dist branch." && exit 1
-    fi
-    #Check if the previous version is deprecated and if not back it up
-    if [[ ${MGA_PREV_VERSION} != *"${MGA_DEPRECATED_VERSIONS}"* ]]; then
-      backup_previous_versions
-      prepare_branch
-      restore_previous_versions
-    fi
+function print_msg() {
+  local msg=${1}
+
+  if [[ ${VERBOSE} -eq 1 ]] || [[ ${DEBUG} -eq 1 ]]; then
+    echo "${msg}"
+  # else
+    # echo "${msg}" | tee -a ${BUILD_LOG_FILE}
+  fi
+  echo "${msg}"  >> ${BUILD_LOG_FILE}
+}
+
+function run_command() {
+  local command=( "$@" )
+
+  if [[ ${DEBUG} -eq 1 ]]; then
+    eval "${command[@]}"
+  elif [[ ${SILENT} -eq 0 ]] && [[ ${VERBOSE} -eq 1 ]]; then
+    # out=$(eval "${command[@]}" ${DEBUG_OUTPUT})
+    eval "${command[@]}" | tee -a ${BUILD_LOG_FILE}
   else
-    echo "ERROR: dist branch does not exist !!" && exit 1
+    eval "${command[@]}" >> ${BUILD_LOG_FILE} 2>&1
+    if [[ $? -gt 0 ]]; then
+      # print_msg "${out}"
+      print_msg "ERROR: Cannot run command: " "${command[@]}"
+      exit 1
+    fi
   fi
 }
 
-function prepare_branch () {
-  echo "* Delete local dist branch:"
-  # Delete it locally and recreate it so it only has a single commit
-  git checkout master
-  git branch -D dist
-  [ $? -gt 0 ] && echo "ERROR: Cannot delete local dist branch." && exit 1
-
-  echo "* Checking out new empty dist branch:"
-  # Checkout new dist branch based on master and commit image on that branch.
-  git checkout -b dist master
-  [ $? -gt 0 ] && echo "ERROR: Cannot create dist branch." && exit 1
-
-}
 
 function push () {
-  commit_msg="${COMMIT_MSG:-Automated Image Update by ${0} v. ${VERSION}}"
-  # commit_msg="Automated Image Update by ${0} v. ${VERSION}"
+  program_name=$(echo ${0}|tr -d './')
+  local commit_msg="Automated Image Update by ${program_name} v. ${VERSION}"
 
-  dist_branch_exists="$(git branch|grep dist)"
-  if [ $? -eq 0 ]; then
-    # Prepare the branch first for commit & push
-    prepare
+  print_msg "* Preparing for commit and push new images..."
+  # Add and commit the updated file
+  print_msg " [-] Adding rootfs files to dist branch..."
+  xz_files=$(find . -name '*.tar.xz')
+  #gz_files=$(find . -name '*.tar.gz')
 
-    # Add and commit the updated file
-    echo "* Adding rootfs files to dist branch:"
-    xz_files=$(find . -name '*.tar.xz')
-    #gz_files=$(find . -name '*.tar.gz')
+  [ "${xz_files}" != "" ] && run_command git add ${xz_files}
+  #[ "${gz_files}" != "" ] && git add ${gz_files}
 
-    [ "${xz_files}" != "" ] && git add ${xz_files}
-    #[ "${gz_files}" != "" ] && git add ${gz_files}
+  print_msg " [-] Commit new rootfs file to dist branch..."
+  run_command git commit ${QUIET_OUTPUT} -m \"${commit_msg}\"
+  #git commit -m "Updated image to fix issue #7."
 
-    echo "* Commit new rootfs file to dist branch:"
-    git commit -m "${commit_msg}"
-    #git commit -m "Updated image to fix issue #7."
-
-    # Force push new dist branch
-    echo "* Force-pushing new dist branch:"
-    git push -f origin dist
-    #git push -f origin
-    [ $? -gt 0 ] && echo "ERROR: Cannot force-push dist branch." && exit 1
-  else
-    echo "ERROR: dist branch does not exist" && exit 1
-  fi
-}
-
-function backup_previous_versions () {
-  echo "* Backing up existing images:"
-  mkdir -p ${TMP_DIR}/
-  sudo cp -rp ${BUILD_DIR}/dist ${TMP_DIR}/
-  [ $? -gt 0 ] && echo "ERROR: Cannot backup existing images." && exit 1
-}
-
-function restore_previous_versions () {
-  if [ -d "${TMP_DIR}/dist" ]; then
-    # Copy back old relase rootfs files
-    echo "* Restoring images into dist branch:"
-    sudo cp -rpf ${TMP_DIR}/dist ${BUILD_DIR}/
-    [ $? -gt 0 ] && echo "ERROR: Cannot copy back rootfs file." && exit 1
-  fi
+  # Force push new dist branch
+  print_msg " [-] Force-pushing new dist branch..."
+  # git push ${GIT_OUTPUT} -f origin dist
+  #run_command git push -f origin
+  [ $? -gt 0 ] && echo "ERROR: Cannot force-push dist branch." && exit 1
 }
 
 function build_image() {
-  echo "* Building mageia ${MGA_VERSION}  rootfs image for architecture: ${ARCH}"
 
-  if [ "${ARCH}" != "x86_64" ]; then
-    ARCH=" -a ${ARCH}"
-    if [ "${MIRROR}" != "" ]; then
-      MIRROR=" --mirror=${MIRROR}"
-    else
-      echo -e "ERROR: When building any architecture different from x86_64 wou need to set a mirror with -r parameter." && exit 1
-    fi
-  fi
+  cd ${BUILD_DIR}/build
+  print_msg "* Cloning ${MGA_BREW_REPO}"
+  run_command git clone ${MGA_BREW_REPO}
+  repo_dir=$(echo ${MGA_BREW_REPO}|cut -d'/' -f2)
+  cd ${repo_dir}
 
-    sudo ./mkimage.sh --rootfs="${NEW_ROOTFS_DIR}/" --version=${MGA_VERSION} ${ARCH} ${MIRROR}
-    [ $? -gt 0 ] && echo "ERROR: Cannot build rootfs file." && exit 1
-echo "* Done building image."
-  # fi
+  print_msg "* Fetching dist branch..."
+  run_command git fetch origin dist:dist ${GIT_OUTPUT}
+
+  print_msg "* Checking out dist branch..."
+  run_command git checkout dist ${GIT_OUTPUT}
+
+  print_msg "* Backing up dist branch..."
+  mkdir ../dist_backup
+  cp -rp ./dist ../dist_backup
+  run_command git checkout master ${GIT_OUTPUT}
+
+  print_msg "* Deleting dist branch..."
+  run_command git branch -D dist ${GIT_OUTPUT}
+
+  print_msg "* Recreating dist branch..."
+  run_command git checkout ${GIT_OUTPUT} -b dist master
+  cp -rp ../dist_backup/* .
+
+  # Build all archs for all versions declared on MGA_SUPPORTED_ARCHS
+  for mga_version in "${!MGA_SUPPORTED_ARCHS[@]}"; do
+    for build_arch in ${MGA_SUPPORTED_ARCHS[${mga_version}]}; do
+      print_msg "* Building mageia ${mga_version}  rootfs image for architecture: ${build_arch}"
+      build_mirror=${MIRROR}/${mga_version}/${build_arch}
+      new_rootfs_dir="${BUILD_DIR}/dist/${mga_version}/${build_arch}"
+      mkdir -p ${new_rootfs_dir}
+      run_command ./mkimage.sh --rootfs="${new_rootfs_dir}/" --version=${mga_version} ${build_arch} ${build_mirror}
+    done
+  done
 }
 
 function update_library() {
+  local commit_msg="New mageia images build - @juanluisbaptiste"
+
   # Now clone docker official-images repo and update the library build image
-  echo "* Cloning ${OFFICIAL_IMAGES_REPO_URL}"
-  cd ${TMP_DIR}
-  git clone ${OFFICIAL_IMAGES_REPO_URL}
+  print_msg "* Cloning ${OFFICIAL_IMAGES_REPO_URL}"
+  cd ${BUILD_DIR}/build
+  run_command git clone ${OFFICIAL_IMAGES_REPO_URL}
   repo_dir=$(echo ${OFFICIAL_IMAGES_REPO}|cut -d'/' -f2)
   cd ${repo_dir}
+
+  # Update fork with latest remote changes before working on it
+  run_command git remote add upstream ${OFFICIAL_IMAGES_REPO_URL}
+  run_command git fetch upstream
+  run_command git pull upstream master --rebase
 
   # Get the last commit hash of dist branch
   git_commit=$(git ls-remote ${MGA_BREW_REPO} refs/heads/dist | cut -f 1)
@@ -152,23 +160,26 @@ function update_library() {
   fi
 
   # Add and commit change
-  git add library/mageia
+  run_command git add library/mageia
   [ $? -gt 0 ] && echo "ERROR: Cannot git add modified library file." && exit 1
-  git commit -m "${commit_msg}"
+  run_command git commit -m "${commit_msg}"
   [ $? -gt 0 ] && echo "ERROR: Cannot commit on library file." && exit 1
-  git push
-  [ $? -gt 0 ] && echo "ERROR: Cannot push on library file." && exit 1
+  # # git push
+  # [ $? -gt 0 ] && echo "ERROR: Cannot push on library file." && exit 1
 }
 
 create_pr() {
-  git push -u origin "$1"
-  hub pull-request -h "$1" -F -
+  run_command git push -u origin "$1"
+  run_command hub pull-request -h "$1" -F -
 }
 
 function term_handler(){
   echo "***** Build cancelled by user *****"
-  sudo rm -fr "${NEW_ROOTFS_DIR}"
-  sudo rm -fr "${TMP_DIR}"
-  git checkout master
+  #sudo rm -fr "${NEW_ROOTFS_DIR}"
+  #sudo rm -fr "${TMP_DIR}"
+  # rm -fr "${NEW_ROOTFS_DIR}"
+  rm -fr "${BUILD_DIR}"
+
+  # git checkout master
   exit 1
 }

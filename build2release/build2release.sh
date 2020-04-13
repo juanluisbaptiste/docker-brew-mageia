@@ -15,51 +15,32 @@
 # to make a brand new one that doesn't contain that older tarball commit
 
 # This script version
-VERSION=0.3
-# Set default version
-MGA_LATEST_VERSION="6"
-MGA_VERSION=${MGA_LATEST_VERSION}
-MGA_PREV_VERSION=$((MGA_VERSION-1))
-MGA_DEPRECATED_VERSIONS="3 4 5"
-MGA_BREW_REPO="git@github.com:juanluisbaptiste/docker-brew-mageia"
-OFFICIAL_IMAGES_REPO="juanluisbaptiste/official-images"
-OFFICIAL_IMAGES_REPO_URL="git@github.com:${OFFICIAL_IMAGES_REPO}"
-TMP_DIR="$(mktemp -d)"
-ROOTFS_FILE_NAME="rootfs.tar.xz"
+VERSION=0.5
+
 BUILD=0
-PREPARE=0
 PUSH=0
-CHECKOUT_DIST=0
 UPDATE_OFFICIAL=0
+DEBUG=0
 VERBOSE=0
-ARCH="x86_64"
-BUILD_DIR="$(pwd)"
+SILENT=1
+BUILD_DIR="$(mktemp -d)"
+DEBUG_OUTPUT=" 2>&1 >/dev/null "
+CLEANUP_BUILD_FILES=0
 
 # Include functions
 . ./functions.sh
 
-
 trap 'term_handler' INT
 
-while getopts a:bB:dm:M:pPr:UvVh option
+while getopts bB:pr:UvVh option
 do
   case "${option}"
   in
-    a) ARCH=${OPTARG}
-       ;;
     b) BUILD=1
        ;;
-    B) BUILD_DIR=${OPTARG}
+    B) BUILD_DIR="$(mktemp -d -p ${OPTARG})"
        ;;
-    d) CHECKOUT_DIST=1
-       ;;
-    m) MGA_VERSION=${OPTARG}
-       ;;
-    M) COMMIT_MSG=${OPTARG}
-       ;;
-    p) PREPARE=1
-       ;;
-    P) PUSH=1
+    p) PUSH=1
        ;;
     r) MIRROR=${OPTARG}
       ;;
@@ -68,10 +49,12 @@ do
     h) usage
        exit
        ;;
-    v) print_version
-       exit
+    v) VERBOSE=1
+       DEBUG_OUTPUT=" 2>&1 "
        ;;
-    V) VERBOSE=1
+    V) DEBUG=1
+       set -x
+       DEBUG_OUTPUT=""
        ;;
     ?) usage
        exit
@@ -79,45 +62,28 @@ do
   esac
 done
 
-[ ${VERBOSE} -eq 1 ] && set -x
+print_msg "${0} - v.${VERSION}"
 
-if [[ ${MGA_VERSION} == *"${MGA_DEPRECATED_VERSIONS}"* ]]; then
-  echo "ERROR: Version to build is deprecated." && exit 1
-fi
+mkdir -p ${BUILD_DIR}/build
+rm -f ${BUILD_LOG_FILE}
+touch ${BUILD_LOG_FILE}
 
-NEW_ROOTFS_DIR="${BUILD_DIR}/dist/${MGA_VERSION}/${ARCH}"
-mkdir -p ${NEW_ROOTFS_DIR}
-
-if  [ "${ARCH}" != "x86_64" ] && [ "${ARCH}" != "armv7hl" ] && [ "${ARCH}" != "aarch64" ]; then
-  echo -e "ERROR: Build architecture not supported.\n" && exit 1
-fi
-
-if [ ${BUILD} -eq 1 ]; then
-  # Checkout dist branch to get the rootfs file from older releases
-  if [ ${CHECKOUT_DIST} -eq 1 ]; then
-    prepare
-  fi
-  # First delete any old build
-  rm -fr dist/${MGA_VERSION:?}/${ARCH}/${ROOTFS_FILE_NAME}
+# Build images
+if [[ ${BUILD} -eq 1 ]]; then
   build_image
 fi
 
-if [ ${PREPARE} -eq 1 ]; then
-  prepare
-fi
-
-if [ ${PUSH} -eq 1 ]; then
+# Push dist branch
+if [[  ${PUSH} -eq 1 ]]; then
   push
-  # Checkout back master and locally delete dist branch
-  #git checkout master
-  #git branch -D dist
 fi
 
-if [ ${UPDATE_OFFICIAL} -eq 1 ]; then
+# Update official docker library
+if [[ ${UPDATE_OFFICIAL} -eq 1 ]]; then
   update_library
 fi
 
-# Cleanup
-rm -fr ${TMP_DIR}
-
-echo "* Done."
+# Cleanup after new images ar built and pushed
+if [[ ${CLEANUP_BUILD_FILES} -eq 1 ]]; then
+  rm -fr ${BUILD_DIR}
+fi
