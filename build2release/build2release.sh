@@ -15,22 +15,25 @@
 # to make a brand new one that doesn't contain that older tarball commit
 
 # This script version
-VERSION=0.2
+VERSION=0.3
 # Set default version
 MGA_LATEST_VERSION="6"
 MGA_VERSION=${MGA_LATEST_VERSION}
 MGA_PREV_VERSION=$((MGA_VERSION-1))
-MGA_DEPRECATED_VERSIONS="3 4"
+MGA_DEPRECATED_VERSIONS="3 4 5"
 MGA_BREW_REPO="git@github.com:juanluisbaptiste/docker-brew-mageia"
 OFFICIAL_IMAGES_REPO="juanluisbaptiste/official-images"
 OFFICIAL_IMAGES_REPO_URL="git@github.com:${OFFICIAL_IMAGES_REPO}"
-TMP_DIR="/tmp/mga-tmp"
+TMP_DIR="$(mktemp -d)"
 ROOTFS_FILE_NAME="rootfs.tar.xz"
 BUILD=0
 PREPARE=0
 PUSH=0
+CHECKOUT_DIST=0
 UPDATE_OFFICIAL=0
 VERBOSE=0
+ARCH="x86_64"
+BUILD_DIR="$(pwd)"
 
 # Include functions
 . ./functions.sh
@@ -38,11 +41,17 @@ VERBOSE=0
 
 trap 'term_handler' INT
 
-while getopts bm:M:pPUvVh option
+while getopts a:bB:dm:M:pPr:UvVh option
 do
   case "${option}"
   in
+    a) ARCH=${OPTARG}
+       ;;
     b) BUILD=1
+       ;;
+    B) BUILD_DIR=${OPTARG}
+       ;;
+    d) CHECKOUT_DIST=1
        ;;
     m) MGA_VERSION=${OPTARG}
        ;;
@@ -52,6 +61,8 @@ do
        ;;
     P) PUSH=1
        ;;
+    r) MIRROR=${OPTARG}
+      ;;
     U) UPDATE_OFFICIAL=1
        ;;
     h) usage
@@ -74,20 +85,20 @@ if [[ ${MGA_VERSION} == *"${MGA_DEPRECATED_VERSIONS}"* ]]; then
   echo "ERROR: Version to build is deprecated." && exit 1
 fi
 
-NEW_ROOTFS_DIR="$(pwd)/${MGA_VERSION}/"
-PREV_ROOTFS_DIR="$(pwd)/${MGA_PREV_VERSION}/"
-mkdir ${TMP_DIR}
+NEW_ROOTFS_DIR="${BUILD_DIR}/dist/${MGA_VERSION}/${ARCH}"
+mkdir -p ${NEW_ROOTFS_DIR}
 
-# Checkout dist branch to get the rootfs file from older releases
-echo "* Checking out dist branch:"
-git fetch
-[ $? -gt 0 ] && echo "ERROR: Cannot fetch remote branches." && exit 1
-git checkout dist
-[ $? -gt 0 ] && echo "ERROR: Cannot checkout dist branch." && exit 1
+if  [ "${ARCH}" != "x86_64" ] && [ "${ARCH}" != "armv7hl" ] && [ "${ARCH}" != "aarch64" ]; then
+  echo -e "ERROR: Build architecture not supported.\n" && exit 1
+fi
 
 if [ ${BUILD} -eq 1 ]; then
+  # Checkout dist branch to get the rootfs file from older releases
+  if [ ${CHECKOUT_DIST} -eq 1 ]; then
+    prepare
+  fi
   # First delete any old build
-  rm -fr ${MGA_VERSION:?}/${ROOTFS_FILE_NAME}
+  rm -fr dist/${MGA_VERSION:?}/${ARCH}/${ROOTFS_FILE_NAME}
   build_image
 fi
 

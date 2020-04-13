@@ -7,7 +7,6 @@
 #
 # Tested working versions are for Mageia 6 onwards (inc. cauldron).
 #
-# Based on mkimage-urpmi.sh
 #
 
 set -e
@@ -15,7 +14,7 @@ set -e
 mkimg="$(basename "$0")"
 
 usage() {
-	echo >&2 "usage: $mkimg --rootfs=rootfs_path --version=mageia_version [--mirror=url] [--package-manager=(dnf|microdnf|urpmi)] [--forcearch=ARCH] [--with-systemd]"
+	echo >&2 "usage: $mkimg --rootfs=rootfs_path --version=mageia_version [--mirror=url] [--package-manager=(dnf|microdnf|urpmi)] [--forcearch=ARCH] [--with-systemd] [--quiet]"
 	echo >&2 "   ie: $mkimg --rootfs=. --version=6 --with-systemd"
 	echo >&2 "       $mkimg --rootfs=. --version=cauldron --package-manager=dnf --with-systemd"
 	echo >&2 "       $mkimg --rootfs=/tmp/rootfs --version=6 --mirror=http://mirrors.kernel.org/mageia/distrib/6/x86_64/ --with-systemd"
@@ -24,7 +23,7 @@ usage() {
 	exit 1
 }
 
-optTemp=$(getopt --options '+d,v:,p:,a:,s,h' --longoptions 'rootfs:,version:,mirror:,package-manager:,forcearch:,with-systemd, help' --name $mkimg -- "$@")
+optTemp=$(getopt --options '+d,v:,p:,a:,s,q,h' --longoptions 'rootfs:,version:,mirror:,package-manager:,forcearch:,with-systemd,quiet,help' --name $mkimg -- "$@")
 eval set -- "$optTemp"
 unset optTemp
 
@@ -39,6 +38,7 @@ while true; do
                 -p|--package-manager) pkgmgr="$2" ; shift 2 ;;
                 -a|--forcearch) buildarch="$2" ; shift 2 ;;
                 -s|--with-systemd) systemd=true ; shift ;;
+                -q|--quiet) quiet=true ; shift ;;
                 -h|--help) usage ;;
                  --) shift ; break ;;
         esac
@@ -57,7 +57,7 @@ if [ ! -x /usr/bin/dnf ]; then
 	exit 1
 fi
 
-if [ ! -z $buildarch -a -z $mirror ]; then
+if [ ! -z "$buildarch" -a -z "$mirror" ]; then
 	echo "Error: Mirror must be specified when setting a specific architecture!"
 	exit 1
 fi
@@ -76,6 +76,8 @@ if [ ! -z $buildarch ]; then
 			echo "Error: 'qemu-user-static' needs to be installed for non-native rootfs builds!"
 			exit 1
 		fi
+		# To ensure qemu-user-static can be used, restart systemd-binfmt
+		systemctl restart systemd-binfmt.service
 	fi
 fi
 
@@ -91,7 +93,11 @@ fi
 
 if [ ! -z $mirror ]; then
         # If mirror provided, use it exclusively
-        reposetup="--disablerepo=* --repofrompath=mgarel,$mirror/media/core/release/ --repofrompath=mgaup,$mirror/media/core/updates/ --enablerepo=mgarel --enablerepo=mgaup"
+	# Unfortunately, when using a mirror with --repofrompath,
+	# we don't have a nice way to bootstrap with gpg keys,
+	# so installations fail unless we pass --nogpgcheck
+	# See: https://bugzilla.redhat.com/show_bug.cgi?id=1689591
+        reposetup="--nogpgcheck --disablerepo=* --repofrompath=mgarel,$mirror/media/core/release/ --repofrompath=mgaup,$mirror/media/core/updates/ --enablerepo=mgarel --enablerepo=mgaup"
 fi
 
 if [ -z $mirror ]; then
@@ -120,11 +126,18 @@ if [ -z $pkgmgr ]; then
         pkgmgr="dnf urpmi"
 fi
 
+extrapkgs=""
+# If urpmi is included, we *must* add curl to the target environment,
+# since aria2 segfaults on some architectures, like aarch64
+if [[ $pkgmgr == *"urpmi"* ]]; then
+        extrapkgs="$extrapkgs curl"
+fi
+
 if [ ! -z $systemd ]; then
         echo -e "--------------------------------------"
         echo -e "Creating image with systemd support."
         echo -e "--------------------------------------\n"
-        systemd="systemd"
+        extrapkgs="$extrapkgs systemd"
 fi
 
 (
@@ -134,16 +147,24 @@ fi
             --installroot="$rootfsDir" \
             --releasever="$releasever" \
             --setopt=install_weak_deps=False \
-            --nodocs --assumeyes --quiet \
-            install basesystem-minimal $pkgmgr locales locales-en $systemd
+            --nodocs --assumeyes ${quiet:\--quiet} \
+            install basesystem-minimal $pkgmgr locales locales-en $extrapkgs
 )
 
+# Make sure /etc/resolv.conf has something useful in it
+# This is being done before urpmi.addmedia call to ensure
+# that will work from within the chroot...
+mkdir -p "$rootfsDir/etc"
+cat > "$rootfsDir/etc/resolv.conf" <<'EOF'
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+EOF
+
 # Configure urpmi mirrorlist if urpmi is included on the system
+# We do this in within the root to minimize impact from host,
+# and so that target system architectures can be properly configured
 if [[ $pkgmgr == *"urpmi"* ]]; then
-        if [ -x /usr/sbin/urpmi.addmedia ]; then
-                urpmi.addmedia --distrib --mirrorlist "https://mirrors.mageia.org/api/mageia.$releasever.$buildarch.list" \
-                               --urpmi-root "$rootfsDir"
-        fi
+        chroot "$rootfsDir" urpmi.addmedia --curl --distrib --mirrorlist "https://mirrors.mageia.org/api/mageia.$releasever.$buildarch.list"
 fi
 
 "$(dirname "$BASH_SOURCE")/.febootstrap-minimize" "$rootfsDir"
@@ -169,13 +190,6 @@ fi
 # Docker mounts tmpfs at /dev and procfs at /proc so we can remove them
 rm -rf "$rootfsDir/dev" "$rootfsDir/proc"
 mkdir -p "$rootfsDir/dev" "$rootfsDir/proc"
-
-# make sure /etc/resolv.conf has something useful in it
-mkdir -p "$rootfsDir/etc"
-cat > "$rootfsDir/etc/resolv.conf" <<'EOF'
-nameserver 8.8.8.8
-nameserver 8.8.4.4
-EOF
 
 if [ ! -z $systemd ]; then
     tarFile="$dir/rootfs-systemd.tar.xz"
