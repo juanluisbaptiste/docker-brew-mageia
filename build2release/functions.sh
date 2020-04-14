@@ -166,8 +166,9 @@ function update_library() {
   [ $? -gt 0 ] && echo "ERROR: Cannot git add modified library file." && exit 1
   run_command git commit -m \"${commit_msg}\"
   [ $? -gt 0 ] && echo "ERROR: Cannot commit on library file." && exit 1
-  # # git push
-  # [ $? -gt 0 ] && echo "ERROR: Cannot push on library file." && exit 1
+  print_msg "[+] Pushing changes"
+  run_command git push
+  [ $? -gt 0 ] && echo "ERROR: Cannot push on library file." && exit 1
 }
 
 create_pr() {
