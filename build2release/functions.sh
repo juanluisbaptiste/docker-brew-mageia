@@ -132,7 +132,7 @@ function build_image() {
 }
 
 function update_library() {
-  local commit_msg="New mageia images build - @juanluisbaptiste"
+  local commit_msg="Updated mageia images"
 
   # Now clone docker official-images repo and update the library build image
   print_msg "* Cloning ${OFFICIAL_IMAGES_FORK_URL}"
@@ -151,8 +151,9 @@ function update_library() {
   print_msg "[+] Get last commit from ${MGA_BREW_REPO}"
   git_commit=$(git ls-remote ${MGA_BREW_REPO_URL} refs/heads/dist | cut -f 1)
   [ $? -gt 0 ] && echo "ERROR: Cannot get last commit from dist branch." && exit 1
-
+  print_msg "[+] Last commit is: ${git_commit}"
   # Update library file with new hash
+  print_msg "[+] Updating library file with new commit"
   if [ "${git_commit}" != "" ]; then
     sed -i -r "s/(GitCommit: *).*/\1${git_commit}/" library/mageia
     [ $? -gt 0 ] && echo "ERROR: Cannot update commit hash on library file." && exit 1
