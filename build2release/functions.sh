@@ -164,7 +164,7 @@ function update_library() {
   # Add and commit change
   run_command git add library/mageia
   [ $? -gt 0 ] && echo "ERROR: Cannot git add modified library file." && exit 1
-  run_command git commit -m "${commit_msg}"
+  run_command git commit -m \"${commit_msg}\"
   [ $? -gt 0 ] && echo "ERROR: Cannot commit on library file." && exit 1
   # # git push
   # [ $? -gt 0 ] && echo "ERROR: Cannot push on library file." && exit 1
