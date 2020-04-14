@@ -7,8 +7,11 @@ MGA_SUPPORTED_ARCHS[7]="x86_64 aarch64 armv7hl"
 
 # Default mirror to use for all builds
 MIRROR="http://distrib-coffee.ipsl.jussieu.fr/pub/linux/Mageia/distrib/"
-MGA_BREW_REPO="git@github.com:juanluisbaptiste/docker-brew-mageia"
-OFFICIAL_IMAGES_REPO="juanluisbaptiste/official-images"
+MGA_BREW_REPO="juanluisbaptiste/docker-brew-mageia"
+MGA_BREW_REPO_URL="git@github.com:${MGA_BREW_REPO}"
+OFFICIAL_IMAGES_FORK="juanluisbaptiste/official-images"
+OFFICIAL_IMAGES_FORK_URL="git@github.com:${OFFICIAL_IMAGES_FORK}"
+OFFICIAL_IMAGES_REPO="docker-library/official-images"
 OFFICIAL_IMAGES_REPO_URL="git@github.com:${OFFICIAL_IMAGES_REPO}"
 # DATE=$(date +%m-%d-%Y_%H%M%S)
 BUILD_LOG_FILE="${PWD}/mga-build.out"
@@ -82,22 +85,20 @@ function push () {
   #[ "${gz_files}" != "" ] && git add ${gz_files}
 
   print_msg " [-] Commit new rootfs file to dist branch..."
-  run_command git commit ${QUIET_OUTPUT} -m \"${commit_msg}\"
-  #git commit -m "Updated image to fix issue #7."
+  run_command git commit -m \"${commit_msg}\"
 
   # Force push new dist branch
   print_msg " [-] Force-pushing new dist branch..."
-  # git push ${GIT_OUTPUT} -f origin dist
-  #run_command git push -f origin
+  run_command git push -f origin dist
   [ $? -gt 0 ] && echo "ERROR: Cannot force-push dist branch." && exit 1
 }
 
 function build_image() {
 
   cd ${BUILD_DIR}/build
-  print_msg "* Cloning ${MGA_BREW_REPO}"
-  run_command git clone ${MGA_BREW_REPO}
-  repo_dir=$(echo ${MGA_BREW_REPO}|cut -d'/' -f2)
+  print_msg "* Cloning ${MGA_BREW_REPO_URL}"
+  run_command git clone ${MGA_BREW_REPO_URL}
+  repo_dir=$(echo ${MGA_BREW_REPO_URL}|cut -d'/' -f2)
   cd ${repo_dir}
 
   print_msg "* Fetching dist branch..."
@@ -134,19 +135,21 @@ function update_library() {
   local commit_msg="New mageia images build - @juanluisbaptiste"
 
   # Now clone docker official-images repo and update the library build image
-  print_msg "* Cloning ${OFFICIAL_IMAGES_REPO_URL}"
+  print_msg "* Cloning ${OFFICIAL_IMAGES_FORK_URL}"
   cd ${BUILD_DIR}/build
-  run_command git clone ${OFFICIAL_IMAGES_REPO_URL}
-  repo_dir=$(echo ${OFFICIAL_IMAGES_REPO}|cut -d'/' -f2)
+  run_command git clone ${OFFICIAL_IMAGES_FORK_URL}
+  repo_dir=$(echo ${OFFICIAL_IMAGES_FORK}|cut -d'/' -f2)
   cd ${repo_dir}
 
   # Update fork with latest remote changes before working on it
+  print_msg "[+] Updating ${OFFICIAL_IMAGES_FORK} fork with latest upstream changes"
   run_command git remote add upstream ${OFFICIAL_IMAGES_REPO_URL}
   run_command git fetch upstream
   run_command git pull upstream master --rebase
 
   # Get the last commit hash of dist branch
-  git_commit=$(git ls-remote ${MGA_BREW_REPO} refs/heads/dist | cut -f 1)
+  print_msg "[+] Get last commit from ${MGA_BREW_REPO}"
+  git_commit=$(git ls-remote ${MGA_BREW_REPO_URL} refs/heads/dist | cut -f 1)
   [ $? -gt 0 ] && echo "ERROR: Cannot get last commit from dist branch." && exit 1
 
   # Update library file with new hash
