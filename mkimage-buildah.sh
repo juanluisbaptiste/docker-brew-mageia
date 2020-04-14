@@ -142,6 +142,9 @@ if [ ! -z $systemd ]; then
         echo -e "--------------------------------------\n"
         extrapkgs="$extrapkgs systemd"
 fi
+
+# Special install makedev as the scripts cause rootless buildah
+# to freeze
 (
     dnf \
             $reposetup \
