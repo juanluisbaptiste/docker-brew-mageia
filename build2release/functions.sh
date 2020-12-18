@@ -125,7 +125,7 @@ function build_image() {
       build_mirror=${MIRROR}/${mga_version}/${build_arch}
       new_rootfs_dir="${BUILD_DIR}/dist/${mga_version}/${build_arch}"
       mkdir -p ${new_rootfs_dir}
-      run_command ./mkimage.sh --rootfs="${new_rootfs_dir}/" --version=${mga_version} ${build_arch} ${build_mirror}
+      run_command ./mkimage.sh --rootfs="${new_rootfs_dir}/" --version=${mga_version} --forcearch=${build_arch} --mirror=${build_mirror}
     done
   done
 }
