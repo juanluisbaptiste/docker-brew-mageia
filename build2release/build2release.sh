@@ -26,7 +26,7 @@ SILENT=1
 BUILD_DIR="$(mktemp -d)"
 DEBUG_OUTPUT=" 2>&1 >/dev/null "
 CLEANUP_BUILD_FILES=0
-PROGRAM_NAME=$(echo ${0}|tr -d './')
+PROGRAM_NAME="build2release"
 
 # Include functions
 . ./functions.sh
