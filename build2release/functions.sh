@@ -103,20 +103,11 @@ function build_image() {
   print_msg "* Fetching dist branch..."
   run_command git fetch origin dist:dist ${GIT_OUTPUT}
 
-  print_msg "* Checking out dist branch..."
-  run_command git checkout dist ${GIT_OUTPUT}
-
-  print_msg "* Backing up dist branch..."
-  mkdir ../dist_backup
-  cp -rp ./dist ../dist_backup
-  run_command git checkout master ${GIT_OUTPUT}
-
   print_msg "* Deleting dist branch..."
   run_command git branch -D dist ${GIT_OUTPUT}
 
   print_msg "* Recreating dist branch..."
   run_command git checkout ${GIT_OUTPUT} -b dist master
-  cp -rp ../dist_backup/* .
 
   # Build all archs for all versions declared on MGA_SUPPORTED_ARCHS
   for mga_version in "${!MGA_SUPPORTED_ARCHS[@]}"; do
