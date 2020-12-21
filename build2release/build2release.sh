@@ -63,7 +63,7 @@ do
   esac
 done
 
-print_msg "${PROGRAM_NAME} - v.${VERSION}"
+print_msg "${PROGRAM_NAME} - v${VERSION}"
 
 mkdir -p ${BUILD_DIR}/build
 rm -f ${BUILD_LOG_FILE}

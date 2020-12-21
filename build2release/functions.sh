@@ -72,7 +72,7 @@ function run_command() {
 
 
 function push () {
-  local commit_msg="Automated Image Update by ${PROGRAM_NAME} v. ${VERSION}"
+  local commit_msg="Automated Image Update by ${PROGRAM_NAME} v${VERSION}"
 
   print_msg "* Preparing for commit and push new images..."
   # Add and commit the updated file
