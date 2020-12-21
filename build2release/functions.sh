@@ -77,7 +77,7 @@ function push () {
   print_msg "* Preparing for commit and push new images..."
   # Add and commit the updated file
   print_msg " [-] Adding rootfs files to dist branch..."
-  xz_files=$(find . -name '*.tar.xz')
+  xz_files=$(find ${BUILD_DIR} -name '*.tar.xz')
   #gz_files=$(find . -name '*.tar.gz')
 
   [ "${xz_files}" != "" ] && run_command git add ${xz_files}
