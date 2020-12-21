@@ -167,12 +167,7 @@ create_pr() {
 }
 
 function term_handler(){
-  echo "***** Build cancelled by user *****"
-  #sudo rm -fr "${NEW_ROOTFS_DIR}"
-  #sudo rm -fr "${TMP_DIR}"
-  # rm -fr "${NEW_ROOTFS_DIR}"
+  echo "***** Build cancelled by user *****" &> /dev/tty
   rm -fr "${BUILD_DIR}"
-
-  # git checkout master
   exit 1
 }
