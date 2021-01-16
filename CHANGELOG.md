@@ -1,0 +1,22 @@
+# build2release - Change Log
+
+## 0.6.0 - 2021-01-16
+### Added
+- Added the build of Cauldron images for x86_64, armv7hl and aarch64 architectures.
+
+### Changed
+- Fixed call to mkimage.sh which was missing parameters for --forcearch and
+  --mirror.
+- Removed backing up the dist branch contents as now supported versions are
+  built every time.
+
+### Removed
+- Removed mageia 6 images as it is EOL now.
+
+## 0.5.0 - 2020-04-13
+### Changed
+- Comlpete rewrite.
+
+## 0.1.0 - 2018-07-25
+### Added
+- Initial release
