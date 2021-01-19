@@ -3,6 +3,7 @@
 ## 0.6.0 - 2021-01-16
 ### Added
 - Added the build of Cauldron images for x86_64, armv7hl and aarch64 architectures.
+- Added README file with usage instructions.
 
 ### Changed
 - Fixed call to mkimage.sh which was missing parameters for --forcearch and
