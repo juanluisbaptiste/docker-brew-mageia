@@ -48,6 +48,9 @@ done
 rootfsDir="$dir/rootfs"
 #shift
 
+export LC_ALL=C
+export LANGUAGE=C
+export LANG=C
 
 #[ "$dir" ] || usage
 
