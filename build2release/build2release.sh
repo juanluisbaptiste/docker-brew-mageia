@@ -15,7 +15,7 @@
 # to make a brand new one that doesn't contain that older tarball commit
 
 # This script version
-VERSION=0.6.1
+VERSION=0.6.2
 
 BUILD=0
 PUSH=0

@@ -1,6 +1,10 @@
 # build2release - Change Log
 
-## 0.6.1 - 2021-02-08
+## 0.6.2 - 2021-02-08
+### Added
+- Added configuration of image version tags.
+
+## 0.6.1 - 2021-01-31
 ### Added
 - Added the build of mageia 8 images for x86_64, armv7hl and aarch64 architectures.
 

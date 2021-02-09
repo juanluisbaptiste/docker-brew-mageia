@@ -5,6 +5,12 @@ declare -A MGA_SUPPORTED_ARCHS
 MGA_SUPPORTED_ARCHS[7]="x86_64 aarch64 armv7hl"
 MGA_SUPPORTED_ARCHS[8]="x86_64 aarch64 armv7hl"
 MGA_SUPPORTED_ARCHS[cauldron]="x86_64 aarch64 armv7hl"
+# Version tags of supported versions
+declare -A MGA_SUPPORTED_VERSION_TAGS
+MGA_SUPPORTED_VERSION_TAGS[7]="7, latest"
+MGA_SUPPORTED_VERSION_TAGS[8]="8, rc"
+MGA_SUPPORTED_VERSION_TAGS[cauldron]="cauldron"
+
 
 # Default mirror to use for all builds
 MIRROR="http://distrib-coffee.ipsl.jussieu.fr/pub/linux/Mageia/distrib/"
@@ -152,6 +158,16 @@ function update_library() {
   else
     echo "ERROR: Git commit is empty !!" && exit 1
   fi
+
+  # Update image tags for all versions declared on MGA_SUPPORTED_VERSION_TAGS
+  for mga_version in "${!MGA_SUPPORTED_VERSION_TAGS[@]}"; do
+    version_tags="${MGA_SUPPORTED_VERSION_TAGS[${mga_version}]}"
+    print_msg "* Updating tags for image version ${mga_version}: ${version_tags}"
+    if [ "${version_tags}" != "" ]; then
+      sed -i -r "s/(Tags: ${mga_version},*).*/Tags: ${version_tags}/" library/mageia
+      [ $? -gt 0 ] && echo "ERROR: Cannot update tags for image version ${mga_version} on library file." && exit 1
+    fi
+  done
 
   # Add and commit change
   run_command git add library/mageia
