@@ -1,5 +1,9 @@
 # build2release - Change Log
 
+## 0.6.1 - 2021-02-08
+### Added
+- Added the build of mageia 8 images for x86_64, armv7hl and aarch64 architectures.
+
 ## 0.6.0 - 2021-01-16
 ### Added
 - Added the build of Cauldron images for x86_64, armv7hl and aarch64 architectures.
