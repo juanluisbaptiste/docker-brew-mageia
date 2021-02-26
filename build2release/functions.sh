@@ -7,10 +7,9 @@ MGA_SUPPORTED_ARCHS[8]="x86_64 aarch64 armv7hl"
 MGA_SUPPORTED_ARCHS[cauldron]="x86_64 aarch64 armv7hl"
 # Version tags of supported versions
 declare -A MGA_SUPPORTED_VERSION_TAGS
-MGA_SUPPORTED_VERSION_TAGS[7]="7, latest"
-MGA_SUPPORTED_VERSION_TAGS[8]="8, rc"
+MGA_SUPPORTED_VERSION_TAGS[7]="7"
+MGA_SUPPORTED_VERSION_TAGS[8]="8,latest"
 MGA_SUPPORTED_VERSION_TAGS[cauldron]="cauldron"
-
 
 # Default mirror to use for all builds
 MIRROR="http://distrib-coffee.ipsl.jussieu.fr/pub/linux/Mageia/distrib/"
