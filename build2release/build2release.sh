@@ -1,4 +1,9 @@
 #!/bin/bash
+set -Eeo pipefail
+_traperr() {
+  echo "ERROR: ${BASH_SOURCE[1]} at about line ${BASH_LINENO[0]}"
+  docker logout $CI_REGISTRY
+}
 
 # NOT VERY WELL TESTED !! USE IT UNDER YOUR OWN RISK !!
 
