@@ -36,6 +36,7 @@ OPTIONS:
 -b    Build image.
 -B    Build directory.
 -p    Commit and push new images.
+-P    Create Pull Request on docker library repository (needs -U).
 -r    Mirror to use.
 -U    Update mageia docker library file on own fork.
 -v    Verbose mode.
@@ -176,12 +177,19 @@ function update_library() {
   print_msg "[+] Pushing changes"
   run_command git push
   [ $? -gt 0 ] && echo "ERROR: Cannot push on library file." && exit 1
+
+  # Create pull request on official docker library
+  if [[ ${PULL_REQUEST} -eq 1 ]]; then
+    print_msg "[+] Creating Pull Request on ${OFFICIAL_IMAGES_REPO} for new images..."
+    run_command hub pull-request -b ${OFFICIAL_IMAGES_REPO}:master -h ${OFFICIAL_IMAGES_FORK}:master -m "${commit_msg}" -r "@yosifkit,@tianon"
+    [ $? -gt 0 ] && echo "ERROR: Cannot create Pull Request." && exit 1
+  fi
 }
 
-create_pr() {
-  run_command git push -u origin "$1"
-  run_command hub pull-request -h "$1" -F -
-}
+# create_pr() {
+#   run_command git push -u origin "$1"
+#   run_command hub pull-request -h "$1" -F -
+# }
 
 function term_handler(){
   echo "***** Build cancelled by user *****" &> /dev/tty

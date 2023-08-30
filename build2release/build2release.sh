@@ -20,10 +20,11 @@ _traperr() {
 # to make a brand new one that doesn't contain that older tarball commit
 
 # This script version
-VERSION=0.6.3
+VERSION=0.6.4
 
 BUILD=0
 PUSH=0
+PULL_REQUEST=0
 UPDATE_OFFICIAL=0
 DEBUG=0
 VERBOSE=0
@@ -47,6 +48,8 @@ do
     B) BUILD_DIR="$(mktemp -d -p ${OPTARG})"
        ;;
     p) PUSH=1
+       ;;
+    p) PULL_REQUEST=1
        ;;
     r) MIRROR=${OPTARG}
       ;;
