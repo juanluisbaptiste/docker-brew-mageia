@@ -3,7 +3,7 @@
 #
 
 FROM scratch
-MAINTAINER "Juan Luis Baptiste" <juancho@mageia.org>
+LABEL authors="Juan Luis Baptiste" <juancho@mageia.org>
 ADD rootfs.tar.xz /
 
 # Add default image command
