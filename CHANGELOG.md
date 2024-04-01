@@ -1,5 +1,14 @@
 # build2release - Change Log
 
+## 0.6.4 - 2024-03-31
+### Changed
+- Merged PR #21: set locale to C to avoid platform dependency
+- Merged PR #22: fix packager argument
+- Merged PR #33: Skip restarting systemd-binfmt.service when unnecessary
+
+### Removed
+- Removed support for mageia 7
+
 ## 0.6.3 - 2021-02-26
 ### Added
 - Build mageia 8 final images for x86_64, armv7hl and aarch64 architectures.
