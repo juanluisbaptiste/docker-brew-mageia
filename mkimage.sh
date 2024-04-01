@@ -118,7 +118,7 @@ fi
 if [ ! -z $pkgmgr ]; then
         valid_pkg_mgrs="dnf microdnf urpmi"
 
-        [[ $valid_pkg_mgrs =~ (^|[[:space:]])$pkgmgr($|[[:space:]]) ]] && true || echo "Invalid package manager selected." && exit 1
+        [[ $valid_pkg_mgrs =~ (^|[[:space:]])$pkgmgr($|[[:space:]]) ]] || (echo "Invalid package manager selected." && exit 1)
 
         echo -e "--------------------------------------"
         echo -e "Creating image to use $pkgmgr."
