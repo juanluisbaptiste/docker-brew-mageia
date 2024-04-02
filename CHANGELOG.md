@@ -1,9 +1,11 @@
 # build2release - Change Log
 
-## 0.6.5 - 2024-03-31
+## 0.6.5 - 2024-04-01
 ### Added
 - Added mageia 9 build for x86_64, armv7hl and aarch64 architectures.
 - Moved latest tag from mga 8 to mga 9.
+## Changed
+- Updated Dockerfile's label name for all images.
 
 ## 0.6.4 - 2024-03-31
 ### Changed
