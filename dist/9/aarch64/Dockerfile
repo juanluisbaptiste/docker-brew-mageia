@@ -3,7 +3,6 @@
 #
 
 FROM scratch
-LABEL maintainer="Juan Luis Baptiste <juancho@mageia.org>"
 ADD rootfs.tar.xz /
 
 # Add default image command
