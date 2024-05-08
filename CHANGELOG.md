@@ -1,5 +1,10 @@
 # build2release - Change Log
 
+## 0.6.6 - 2024-05-07
+### Removed
+- Removed removed support for mageia 8
+- Removed maintainer label from Dockerfiles
+
 ## 0.6.5 - 2024-04-01
 ### Added
 - Added mageia 9 build for x86_64, armv7hl and aarch64 architectures.
