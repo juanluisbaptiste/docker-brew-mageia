@@ -1,4 +1,5 @@
 #!/bin/bash
+set -Eeo pipefail
 
 # Archquitectures to build for each supported versions
 declare -A MGA_SUPPORTED_ARCHS
@@ -59,22 +60,23 @@ function print_msg() {
 
 function run_command() {
   local command=( "$@" )
+  local exit_code=0
 
   if [[ ${DEBUG} -eq 1 ]]; then
     eval "${command[@]}"
-  elif [[ ${SILENT} -eq 0 ]] && [[ ${VERBOSE} -eq 1 ]]; then
-    # out=$(eval "${command[@]}" ${DEBUG_OUTPUT})
-    eval "${command[@]}" | tee -a ${BUILD_LOG_FILE}
+    exit_code=$?
   else
-    eval "${command[@]}" >> ${BUILD_LOG_FILE} 2>&1
-    if [[ $? -gt 0 ]]; then
-      # print_msg "${out}"
-      print_msg "ERROR: Cannot run command: " "${command[@]}"
-      exit 1
-    fi
+    # Stream output in real-time to log file while capturing errors
+    eval "${command[@]}" >> "${BUILD_LOG_FILE}" 2>&1 || exit_code=$?
+  fi
+
+  # Handle errors
+  if [[ ${exit_code} -gt 0 ]]; then
+    print_msg "ERROR: Command failed with exit code (${exit_code}): ${command[*]}"
+    print_msg "       Look at the log at ${BUILD_LOG_FILE} for the error details."
+    exit ${exit_code}
   fi
 }
-
 
 function push () {
   local commit_msg="Automated Image Update by ${PROGRAM_NAME} v${VERSION}"
