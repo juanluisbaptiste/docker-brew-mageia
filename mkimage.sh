@@ -168,8 +168,16 @@ EOF
 # Configure urpmi mirrorlist if urpmi is included on the system
 # We do this in within the root to minimize impact from host,
 # and so that target system architectures can be properly configured
+# 2025-02-08: Sometimes the build fails because some mirrors are not 
+# up to date, so if a mirror is passed, use it instead of mirrorlist.
 if [[ $pkgmgr == *"urpmi"* ]]; then
-        chroot "$rootfsDir" urpmi.addmedia --curl --distrib --mirrorlist "https://mirrors.mageia.org/api/mageia.$releasever.$buildarch.list"
+        if [ ! -z $mirror ]; then
+                echo -e "\n* Using mirror: $mirror"
+                chroot "$rootfsDir" urpmi.addmedia --curl --distrib mageia-$releasever $mirror
+        else
+                echo -e "\n* Using mirrorlist!"
+                chroot "$rootfsDir" urpmi.addmedia --curl --distrib --mirrorlist "https://mirrors.mageia.org/api/mageia.$releasever.$buildarch.list"
+        fi
 fi
 
 "$(dirname "$BASH_SOURCE")/.febootstrap-minimize" "$rootfsDir"
