@@ -44,12 +44,12 @@ To build the images run the following command:
 $ ./build2release.sh -b
 ```
 
-That command will build all the supported mageia versions but they will not be pushed to this repo's dist branch. The supported versions are defined inside the script it self, [at the beginning](https://github.com/juanluisbaptiste/docker-brew-mageia/blob/83c0b981e41d8d2e7bf7c128c4550fb8a98790c9/build2release/functions.sh#L3) of the `functions.sh` file:
+That command will build all the supported mageia versions but they will not be pushed to this repo's dist branch. The supported versions are defined inside the script it self, [at the beginning](https://github.com/juanluisbaptiste/docker-brew-mageia/blob/master/build2release/functions.sh#L3) of the `functions.sh` file:
 
 ```bash
 # Archquitectures to build for each supported versions
 declare -A MGA_SUPPORTED_ARCHS
-MGA_SUPPORTED_ARCHS[7]="x86_64 aarch64 armv7hl"
+MGA_SUPPORTED_ARCHS[9]="x86_64 aarch64 armv7hl"
 MGA_SUPPORTED_ARCHS[cauldron]="x86_64 aarch64 armv7hl"
 ```
 The script will use a directory named `build` to store the new tarballs, but it can be changed with the -B parameter.
