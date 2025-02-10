@@ -1,5 +1,14 @@
 # build2release - Change Log
 
+## 0.6.7 - 2025-02-09
+### Added
+- Make cloning of docker-brew-mageia repo configrable with CLONE_MGA_BREW_REPO.
+### Changed
+- Fixed error handling in the run_command function, now fatal errors are
+  shown in verbose mode correctly.
+- mkimage.sh: If a mirror is passed, use it instead of mirrorlist for final
+  image. Sometimes the build fails because some mirrors are not up to date.
+
 ## 0.6.6 - 2024-05-07
 ### Removed
 - Removed removed support for mageia 8
