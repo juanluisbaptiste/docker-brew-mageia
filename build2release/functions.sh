@@ -87,7 +87,29 @@ function push () {
   xz_files=$(find ${BUILD_DIR} -name '*.tar.xz')
   #gz_files=$(find . -name '*.tar.gz')
 
-  [ "${xz_files}" != "" ] && run_command git add ${xz_files}
+  if [ "${xz_files}" != "" ]; then
+    print_msg "Adding images: ${xz_files}"
+    if [ ${CLONE_MGA_BREW_REPO} -eq 0 ]; then
+      print_msg "Local repository: Copying rootfs tarball to local repo"
+
+      repo_dir="$(dirname ${SCRIPT_DIR}/|xargs dirname)"
+      for file in "${xz_files}"; do
+        cd ${BUILD_DIR}/build/code
+        echo "rootfs file: ${file}"
+        mga_version="$(echo ${file}|xargs dirname|xargs dirname|xargs basename)"
+        build_arch="$(echo ${file}|xargs dirname|xargs basename)"
+        dest_file="${repo_dir}/dist/${mga_version}/${build_arch}/$(basename ${file})"
+        mv ${file} ${dest_file}
+        cd ${repo_dir}
+        run_command git add ${dest_file}
+      done
+    else
+      run_command git add ${xz_files}
+    fi
+  else
+    print_msg "ERROR: No build files found!"
+    exit 1
+  fi
   #[ "${gz_files}" != "" ] && git add ${gz_files}
 
   print_msg " [-] Commit new rootfs file to dist branch..."
@@ -97,15 +119,26 @@ function push () {
   print_msg " [-] Force-pushing new dist branch..."
   run_command git push -f origin dist
   [ $? -gt 0 ] && echo "ERROR: Cannot force-push dist branch." && exit 1
+
+  if [ ${CLONE_MGA_BREW_REPO} -eq 0 ]; then
+    print_msg "Local repository: Checking out master branch"
+    git checkout feature/local_repo
+  fi
 }
 
 function build_image() {
 
-  cd ${BUILD_DIR}/build
-  print_msg "* Cloning ${MGA_BREW_REPO_URL}"
-  run_command git clone ${MGA_BREW_REPO_URL}
-  repo_dir=$(echo ${MGA_BREW_REPO_URL}|cut -d'/' -f2)
-  cd ${repo_dir}
+  if [ ${CLONE_MGA_BREW_REPO} -eq 1 ]; then
+    cd ${BUILD_DIR}/build
+    print_msg "* Cloning ${MGA_BREW_REPO_URL}"
+    run_command git clone ${MGA_BREW_REPO_URL}
+    repo_dir=$(echo ${MGA_BREW_REPO_URL}|cut -d'/' -f2)
+    cd ${repo_dir}
+  else
+    repo_dir="$(dirname ${SCRIPT_DIR}/|xargs dirname)"
+    print_msg "* Using local repository at [${repo_dir}]..."
+    cd ${repo_dir}
+  fi
 
   print_msg "* Fetching dist branch..."
   run_command git fetch origin dist:dist ${GIT_OUTPUT}

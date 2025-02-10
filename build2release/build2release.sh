@@ -31,6 +31,10 @@ BUILD_DIR="$(mktemp -d)"
 DEBUG_OUTPUT=" 2>&1 >/dev/null "
 CLEANUP_BUILD_FILES=0
 PROGRAM_NAME="build2release"
+SCRIPT_DIR="$(readlink -f "${BASH_SOURCE}")"
+# To to avoid cloning this repository as part of the image update process for
+# development purposes, set CLONE_MGA_BREW_REPO=0. Default is 1.
+CLONE_MGA_BREW_REPO=0
 
 # Include functions
 . ./functions.sh
