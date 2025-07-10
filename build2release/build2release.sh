@@ -85,7 +85,7 @@ fi
 
 # Update official docker library
 if [[ ${UPDATE_OFFICIAL} -eq 1 ]]; then
-  update_library
+  new_update_library
 fi
 
 # Cleanup after new images ar built and pushed
