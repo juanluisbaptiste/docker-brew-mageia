@@ -132,6 +132,58 @@ function build_image() {
   done
 }
 
+function new_update_library() {
+  local commit_msg="Update mageia images"
+
+  # Now clone docker official-images repo and update the library image
+  print_msg "* Cloning ${OFFICIAL_IMAGES_REPO_URL}"
+  cd ${BUILD_DIR}/build
+  run_command git clone ${OFFICIAL_IMAGES_REPO_URL}
+  repo_dir=$(echo ${OFFICIAL_IMAGES_FORK}|cut -d'/' -f2)
+  cd ${repo_dir}
+
+  # Update official-images fork with latest remote changes before working on it
+  print_msg "[+] Adding new remote pointing to our fork: ${OFFICIAL_IMAGES_FORK}"
+  run_command git remote add fork ${OFFICIAL_IMAGES_FORK}
+  print_msg "[+] Checking out to new branch: update"
+  # Create a new branch to work on it
+  run_command git checkout -b update
+
+  # Get the last commit hash of dist branch
+  print_msg "[+] Get last commit from ${MGA_BREW_REPO}"
+  git_commit=$(git ls-remote ${MGA_BREW_REPO_URL} refs/heads/dist | cut -f 1)
+  [ $? -gt 0 ] && echo "ERROR: Cannot get last commit from dist branch." && exit 1
+  print_msg "[+] Last commit is: ${git_commit}"
+
+  # Update library file with new hash
+  print_msg "[+] Updating library file with new commit"
+  if [ "${git_commit}" != "" ]; then
+    sed -i -r "s/(GitCommit: *).*/\1${git_commit}/" library/mageia
+    [ $? -gt 0 ] && echo "ERROR: Cannot update commit hash on library file." && exit 1
+  else
+    echo "ERROR: Git commit is empty !!" && exit 1
+  fi
+
+  # Update image tags for all versions declared on MGA_SUPPORTED_VERSION_TAGS
+  for mga_version in "${!MGA_SUPPORTED_VERSION_TAGS[@]}"; do
+    version_tags="${MGA_SUPPORTED_VERSION_TAGS[${mga_version}]}"
+    print_msg "* Updating tags for image version ${mga_version}: ${version_tags}"
+    if [ "${version_tags}" != "" ]; then
+      sed -i -r "s/(Tags: ${mga_version},*).*/Tags: ${version_tags}/" library/mageia
+      [ $? -gt 0 ] && echo "ERROR: Cannot update tags for image version ${mga_version} on library file." && exit 1
+    fi
+  done
+
+  # Add and commit change
+  run_command git add library/mageia
+  [ $? -gt 0 ] && echo "ERROR: Cannot git add modified library file." && exit 1
+  run_command git commit -m \"${commit_msg}\"
+  [ $? -gt 0 ] && echo "ERROR: Cannot commit on library file." && exit 1
+  print_msg "[+] Pushing changes to fork"
+  run_command git push --set-upstream fork update
+  [ $? -gt 0 ] && echo "ERROR: Cannot push on library file." && exit 1
+}
+
 function update_library() {
   local commit_msg="Updated mageia images"
 
