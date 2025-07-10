@@ -93,6 +93,10 @@ function push () {
   print_msg " [-] Commit new rootfs file to dist branch..."
   run_command git commit -m \"${commit_msg}\"
 
+  # Obtain the commit ID
+  commit_id=$(git rev-parse HEAD)
+  print_msg " [-] Commit ID: ${commit_id}"
+
   # Force push new dist branch
   print_msg " [-] Force-pushing new dist branch..."
   run_command git push -f origin dist
