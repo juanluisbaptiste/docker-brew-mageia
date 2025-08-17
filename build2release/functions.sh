@@ -18,6 +18,7 @@ OFFICIAL_IMAGES_FORK="juanluisbaptiste/official-images"
 OFFICIAL_IMAGES_FORK_URL="git@github.com:${OFFICIAL_IMAGES_FORK}"
 OFFICIAL_IMAGES_REPO="docker-library/official-images"
 OFFICIAL_IMAGES_REPO_URL="git@github.com:${OFFICIAL_IMAGES_REPO}"
+BRANCH="master"
 # DATE=$(date +%m-%d-%Y_%H%M%S)
 BUILD_LOG_FILE="${PWD}/mga-build.out"
 
@@ -117,8 +118,8 @@ function build_image() {
   print_msg "* Deleting dist branch..."
   run_command git branch -D dist ${GIT_OUTPUT}
 
-  print_msg "* Recreating dist branch..."
-  run_command git checkout ${GIT_OUTPUT} -b dist master
+  print_msg "* Recreating dist branch from [${BRANCH}] branch..."
+  run_command git checkout ${GIT_OUTPUT} -b dist ${BRANCH}
 
   # Build all archs for all versions declared on MGA_SUPPORTED_ARCHS
   for mga_version in "${!MGA_SUPPORTED_ARCHS[@]}"; do
