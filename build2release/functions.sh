@@ -18,7 +18,7 @@ OFFICIAL_IMAGES_FORK="juanluisbaptiste/official-images"
 OFFICIAL_IMAGES_FORK_URL="git@github.com:${OFFICIAL_IMAGES_FORK}"
 OFFICIAL_IMAGES_REPO="docker-library/official-images"
 OFFICIAL_IMAGES_REPO_URL="git@github.com:${OFFICIAL_IMAGES_REPO}"
-BRANCH="master"
+BRANCH="develop"
 # DATE=$(date +%m-%d-%Y_%H%M%S)
 BUILD_LOG_FILE="${PWD}/mga-build.out"
 
