@@ -1,5 +1,9 @@
 # build2release - Change Log
 
+## 0.7.0 - 2025-08-18
+### Changed
+- Changed method to update docker official library repo.
+
 ## 0.6.7 - 2025-02-09
 ### Added
 - Make cloning of docker-brew-mageia repo configrable with CLONE_MGA_BREW_REPO.
