@@ -1,5 +1,9 @@
 # build2release - Change Log
 
+## 0.7.1 - 2025-09-15
+### Changed
+- Fix fork URL in new_update_library.
+
 ## 0.7.0 - 2025-08-18
 ### Changed
 - Changed method to update docker official library repo.
