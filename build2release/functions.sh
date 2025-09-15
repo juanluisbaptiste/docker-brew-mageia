@@ -145,7 +145,7 @@ function new_update_library() {
 
   # Update official-images fork with latest remote changes before working on it
   print_msg "[+] Adding new remote pointing to our fork: ${OFFICIAL_IMAGES_FORK}"
-  run_command git remote add fork ${OFFICIAL_IMAGES_FORK}
+  run_command git remote add fork ${OFFICIAL_IMAGES_FORK_URL}
   print_msg "[+] Checking out to new branch: update"
   # Create a new branch to work on it
   run_command git checkout -b update
