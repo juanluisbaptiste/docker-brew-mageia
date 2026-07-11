@@ -20,7 +20,7 @@ _traperr() {
 # to make a brand new one that doesn't contain that older tarball commit
 
 # This script version
-VERSION=0.7.1
+VERSION=0.7.2
 
 BUILD=0
 PUSH=0
