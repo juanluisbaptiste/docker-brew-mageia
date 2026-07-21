@@ -20,7 +20,7 @@ _traperr() {
 # to make a brand new one that doesn't contain that older tarball commit
 
 # This script version
-VERSION=0.7.2
+VERSION=0.8.0
 
 BUILD=0
 PUSH=0
@@ -37,7 +37,7 @@ PROGRAM_NAME="build2release"
 
 trap 'term_handler' INT
 
-while getopts bB:pr:UvVh option
+while getopts bB:pr:s:i:UvVh option
 do
   case "${option}"
   in
@@ -47,8 +47,12 @@ do
        ;;
     p) PUSH=1
        ;;
+    s) SKIP_VERSIONS=${OPTARG}
+       ;;
+    i) INCLUDE_VERSIONS=${OPTARG}
+       ;;
     r) MIRROR=${OPTARG}
-      ;;
+       ;;
     U) UPDATE_OFFICIAL=1
        ;;
     h) usage
@@ -66,6 +70,14 @@ do
        ;;
   esac
 done
+
+if [[ -n "$SKIP_VERSIONS" ]]; then
+  IFS="," read -ra SKIP_ARRAY <<< "$SKIP_VERSIONS"
+fi
+
+if [[ -n "$INCLUDE_VERSIONS" ]]; then
+  IFS="," read -ra INCLUDE_ARRAY <<< "$INCLUDE_VERSIONS"
+fi
 
 print_msg "${PROGRAM_NAME} - v${VERSION}"
 

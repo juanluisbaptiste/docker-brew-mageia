@@ -37,6 +37,8 @@ root filesystem to juanluisbaptiste/docker-brew-mageia.
 OPTIONS:
 -b    Build image.
 -B    Build directory.
+-i    Comma-separated list of versions to include in the build.
+-s    Comma-separated list of versions to skip in the build.
 -p    Commit and push new images.
 -r    Mirror to use.
 -U    Update mageia docker library file on own fork.
@@ -124,7 +126,21 @@ function build_image() {
   run_command git checkout ${GIT_OUTPUT} -b dist ${BRANCH}
 
   # Build all archs for all versions declared on MGA_SUPPORTED_ARCHS
+
+  if [[ -n "${INCLUDE_VERSIONS:-}" ]]; then
+    print_msg "Building only: ${INCLUDE_VERSIONS}"
+  elif [[ -n "${SKIP_VERSIONS:-}" ]]; then
+    print_msg "Skipping: ${SKIP_VERSIONS}"
+  fi
+
   for mga_version in "${!MGA_SUPPORTED_ARCHS[@]}"; do
+    if [[ -n "${INCLUDE_VERSIONS:-}" ]] && [[ ! ",${INCLUDE_VERSIONS}," =~ ",${mga_version}," ]]; then
+      continue
+    fi
+    if [[ -n "${SKIP_VERSIONS:-}" ]] && [[ ",${SKIP_VERSIONS}," =~ ",${mga_version}," ]]; then
+      continue
+    fi
+
     for build_arch in ${MGA_SUPPORTED_ARCHS[${mga_version}]}; do
       print_msg "* Building mageia ${mga_version}  rootfs image for architecture: ${build_arch}"
       build_mirror=${MIRROR}/${mga_version}/${build_arch}
