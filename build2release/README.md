@@ -28,8 +28,10 @@ root filesystem to juanluisbaptiste/docker-brew-mageia.
 OPTIONS:
 -b    Build image.
 -B    Build directory.
+-i    Comma-separated list of versions to include in the build.
 -p    Commit and push new images.
 -r    Mirror to use.
+-s    Comma-separated list of versions to skip in the build.
 -U    Update mageia docker library file on own fork.
 -v    Verbose mode.
 -V    Debug mode.
