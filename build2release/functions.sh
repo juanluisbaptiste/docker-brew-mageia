@@ -198,7 +198,10 @@ function new_update_library() {
   [ $? -gt 0 ] && echo "ERROR: Cannot git add modified library file." && exit 1
   run_command git commit -m \"${commit_msg}\"
   [ $? -gt 0 ] && echo "ERROR: Cannot commit on library file." && exit 1
+  print_msg "[+] Cleanup update branch on fork"
+  run_command git push fork --delete update
   print_msg "[+] Pushing changes to fork"
+  [ $? -gt 0 ] && echo "ERROR: Cannot delete remote update branch." && exit 1
   run_command git push --set-upstream fork update
   [ $? -gt 0 ] && echo "ERROR: Cannot push on library file." && exit 1
 }
